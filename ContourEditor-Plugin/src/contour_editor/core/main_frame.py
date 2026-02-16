@@ -101,7 +101,7 @@ class MainApplicationFrame(QFrame):
         # self.createWorkpieceForm.setFixedWidth(400)
         self.createWorkpieceForm = None # will be created on demand
 
-        # Add sliding panel to layout (no stretch - it will use its size hints)
+        # Add a sliding panel to the layout (no stretch - it will use its size hints)
         horizontalLayout.addWidget(self.sliding_panel, stretch=0)
 
         mainLayout.addWidget(horizontal_widget)
