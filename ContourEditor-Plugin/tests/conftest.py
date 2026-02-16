@@ -91,11 +91,63 @@ def sample_settings():
         "visible": True,
         "layer": "Contour"
     }
-@pytest.fixture
-def qapp(qapp):
-    """Override pytest-qt's qapp fixture to ensure it's available."""
-    return qapp
+# Try to use pytest-qt's qapp fixture, fallback to None for tests that don't need it
+try:
+    from pytest_qt.qtbot import QtBot
+    pytest_plugins = ['pytest_qt']
+except ImportError:
+    # pytest-qt not installed, provide a mock qapp for tests that need it
+    @pytest.fixture
+    def qapp():
+        """Mock QApplication fixture if pytest-qt is not available."""
+        try:
+            from PyQt6.QtWidgets import QApplication
+            app = QApplication.instance()
+            if app is None:
+                app = QApplication([])
+            return app
+        except Exception:
+            return None
 
+    @pytest.fixture
+    def qtbot(qapp):
+        """Mock qtbot fixture if pytest-qt is not available."""
+        from unittest.mock import Mock
+        return Mock()
+
+# ===== EventBus Singleton Management =====
+
+@pytest.fixture(autouse=True)
+def reset_singletons():
+    """Reset singleton instances before each test to prevent stale references."""
+    # Reset EventBus singleton
+    try:
+        from contour_editor.core.event_bus import EventBus
+        EventBus._instance = None
+    except Exception:
+        pass
+
+    # Reset CommandHistory singleton
+    try:
+        from contour_editor.commands.command_history import CommandHistory
+        CommandHistory._instance = None
+    except Exception:
+        pass
+
+    yield
+
+    # Cleanup after test
+    try:
+        from contour_editor.core.event_bus import EventBus
+        EventBus._instance = None
+    except Exception:
+        pass
+
+    try:
+        from contour_editor.commands.command_history import CommandHistory
+        CommandHistory._instance = None
+    except Exception:
+        pass
 
 # ===== Enhanced Fixtures for Stage 6 =====
 
