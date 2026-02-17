@@ -143,6 +143,47 @@ class ContourEditorData:
         return result
 
     @classmethod
+    def from_manager(cls, manager) -> 'ContourEditorData':
+        """
+        Create ContourEditorData directly from a BezierSegmentManager.
+
+        This extracts all segments and organizes them by layer.
+
+        Args:
+            manager: BezierSegmentManager instance
+
+        Returns:
+            New ContourEditorData instance with all segments organized by layer
+        """
+        editor_data = cls()
+
+        # Get all segments from manager
+        segments = manager.get_segments() if hasattr(manager, 'get_segments') else manager.segments
+
+        # Group segments by layer
+        layers_dict = {}
+        for segment in segments:
+            if hasattr(segment, 'layer') and segment.layer:
+                layer_name = segment.layer.name
+
+                # Create layer if it doesn't exist
+                if layer_name not in layers_dict:
+                    layers_dict[layer_name] = Layer(
+                        name=layer_name,
+                        locked=segment.layer.locked if hasattr(segment.layer, 'locked') else False,
+                        visible=segment.layer.visible if hasattr(segment.layer, 'visible') else True
+                    )
+
+                # Add segment to the layer
+                layers_dict[layer_name].add_segment(segment)
+
+        # Add all layers to editor_data
+        for layer in layers_dict.values():
+            editor_data.add_layer(layer)
+
+        return editor_data
+
+    @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ContourEditorData':
         """
         Create ContourEditorData from dictionary.

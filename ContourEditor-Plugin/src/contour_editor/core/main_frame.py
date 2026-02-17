@@ -397,24 +397,38 @@ class MainApplicationFrame(QFrame):
 
     def on_data_save_clicked(self):
         """
-        Handle save button click - collect form data and emit save signal.
+        Handle save button click - collect form data AND editor data, emit complete package.
 
-        Domain-agnostic - just collects form data and emits save_requested signal.
+        Domain-agnostic - collects both form and editor data, emits save_requested signal.
         Applications should connect to this signal and implement their own save logic.
+
+        Emits:
+            save_requested signal with dict containing:
+                - 'form_data': Dictionary from the form (if form exists)
+                - 'editor_data': ContourEditorData from the editor
         """
         try:
             # Get form data if form exists
             form_data = self.additional_data_form.get_data() if self.additional_data_form else {}
             print(f"[MainApplicationFrame] Save requested with form data: {list(form_data.keys())}")
 
-            # Emit save signal - handler will implement save logic
-            self.save_requested.emit(form_data)
+            # Export editor data (domain-agnostic ContourEditorData)
+            from contour_editor.persistence.data.editor_data_model import ContourEditorData
+            editor_data = ContourEditorData.from_manager(self.contourEditor.manager)
 
-        except Exception as e:
-            print(f"❌ Error collecting form data: {e}")
-            import traceback
-            traceback.print_exc()
-            QMessageBox.critical(self, "Error", f"Failed to collect form data: {e}")            # Step 6: Reset UI back to point manager after successful emit
+            # Create complete data package
+            complete_package = {
+                'form_data': form_data,
+                'editor_data': editor_data
+            }
+
+            stats = editor_data.get_statistics()
+            print(f"[MainApplicationFrame] Editor data exported: {stats['total_segments']} segments, {stats['total_points']} points")
+
+            # Emit complete package - handler will implement save logic
+            self.save_requested.emit(complete_package)
+
+            # Step 6: Reset UI back to point manager after successful emitting
             self.contourEditor.camera_feed_update_timer.start()
             self.contourEditor.reset_editor()
             self.pointManagerWidget.refresh_points()

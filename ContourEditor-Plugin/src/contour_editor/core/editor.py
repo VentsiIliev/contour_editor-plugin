@@ -470,5 +470,15 @@ class ContourEditor(QFrame):
         self.settings_manager.show_global_settings()
 
     def reset_editor(self):
-        """Reset editor - delegates to external manager"""
-        self.workpiece_manager.clear_workpiece()
+        """Reset editor - clear all segments and data"""
+        # Clear all segments (domain-agnostic)
+        self.manager.clear_all_segments()
+
+        # Clear workpiece-specific data if workpiece_manager is available
+        if self.workpiece_manager:
+            self.workpiece_manager.clear_workpiece()
+
+        # Clear selection and update UI
+        self.selection_manager.clear_all_selections()
+        self.update()
+        self.pointsUpdated.emit()
