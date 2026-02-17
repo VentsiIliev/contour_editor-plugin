@@ -24,7 +24,7 @@ class PointManagerCoordinator(QWidget):
 
         # Initialize EventBus and CommandHistory
         from contour_editor.core.event_bus import EventBus
-        from contour_editor.domain.commands import CommandHistory
+        from contour_editor.services.commands import CommandHistory
         self.event_bus = EventBus.get_instance()
         self.command_history = CommandHistory.get_instance()
 
@@ -169,5 +169,5 @@ class PointManagerCoordinator(QWidget):
             item_data = current_item.data(Qt.ItemDataRole.UserRole)
             if item_data and item_data.item_type == 'layer':
                 return item_data.layer_name
-        return "Workpiece"
+        return "Main"
 

@@ -7,7 +7,7 @@ def sample_segments():
     """Create a list of sample segments for testing."""
     from unittest.mock import Mock
     segments = []
-    layers = ["Workpiece", "Contour", "Fill"]
+    layers = ["Main", "Contour", "Fill"]
     for i in range(5):
         segment = Mock()
         segment.points = [
@@ -69,7 +69,7 @@ def sample_settings_workpiece():
         "line_width": 2.0,
         "point_size": 6,
         "visible": True,
-        "layer": "Workpiece",
+        "layer": "Main",
         "locked": False
     }
 def sample_settings_fill():

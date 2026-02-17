@@ -6,7 +6,7 @@ Allows applications to inject their own segment manager implementations.
 """
 
 from typing import Type, Optional
-from ...api.interfaces import ISegmentManager
+from ...models.interfaces import ISegmentManager
 
 
 class SegmentManagerProvider:

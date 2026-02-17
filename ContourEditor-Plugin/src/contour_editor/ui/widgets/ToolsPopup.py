@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from .ToolIconWidget import ToolIconWidget
-from ...api.providers import IconProvider
+from ...persistence.providers import IconProvider
 
 
 class ToolsPopup(QDialog):

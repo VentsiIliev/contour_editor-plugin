@@ -14,8 +14,8 @@ from pathlib import Path
 @pytest.fixture
 def settings_workflow_setup(tmp_path):
     """Setup for settings workflow tests."""
-    from contour_editor.domain.services.settings_service import SettingsService
-    from contour_editor.model.SettingsConfig import SettingsConfig
+    from contour_editor.services.settings_service import SettingsService
+    from contour_editor.models.settings_config import SettingsConfig
     # Reset singleton
     SettingsService._instance = None
     # Create service with temp file
@@ -106,8 +106,8 @@ def test_default_settings_workflow(settings_workflow_setup):
     assert saved_data["color"] == "yellow"
 def test_settings_persistence_workflow(tmp_path):
     """Test settings persistence across service instances."""
-    from contour_editor.domain.services.settings_service import SettingsService
-    from contour_editor.model.SettingsConfig import SettingsConfig
+    from contour_editor.services.settings_service import SettingsService
+    from contour_editor.models.settings_config import SettingsConfig
     settings_file = tmp_path / "persistent_settings.json"
     # Workflow Part 1: Create service and save settings
     SettingsService._instance = None

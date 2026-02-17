@@ -6,8 +6,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import pyqtSignal
 
-from ...api.providers import WidgetProvider
-from ...domain.services.settings_service import SettingsService
+from ...persistence.providers.widget_provider import WidgetProvider
+from ...services.settings_service import SettingsService
 
 import json
 import os

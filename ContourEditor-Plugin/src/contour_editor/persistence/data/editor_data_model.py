@@ -14,7 +14,7 @@ import numpy as np
 from PyQt6.QtCore import QPointF
 from copy import deepcopy
 
-from ...api.interfaces import Segment, Layer
+from ...models.segment import Segment, Layer
 
 
 class ContourEditorData:

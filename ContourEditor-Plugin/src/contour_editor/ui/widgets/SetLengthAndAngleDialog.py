@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButt
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QDoubleValidator
 
-from ...api.providers import WidgetProvider
+from ...persistence.providers.widget_provider import WidgetProvider
 
 
 class SetLengthAndAngleDialog(QDialog):

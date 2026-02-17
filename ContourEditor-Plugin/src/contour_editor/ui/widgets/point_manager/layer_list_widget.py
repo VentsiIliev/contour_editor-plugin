@@ -24,7 +24,7 @@ class LayerListWidget(QListWidget):
         self.clear()
         self.layer_items = {}
 
-        for name in ["Workpiece", "Contour", "Fill"]:
+        for name in ["Main", "Contour", "Fill"]:
             self._create_layer_item(name, contour_editor)
 
     def _create_layer_item(self, name, contour_editor):

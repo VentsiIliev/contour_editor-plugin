@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QIcon
-from ....api.providers import IconProvider
+from ....persistence.providers.icon_provider import IconProvider
 
 
 class SegmentActions:
@@ -17,7 +17,7 @@ class SegmentActions:
         if self.segment_service:
             self.segment_service.delete_segment(seg_index)
         elif self.contour_editor:
-            from contour_editor.domain.commands import DeleteSegmentCommand
+            from contour_editor.services.commands import DeleteSegmentCommand
 
             cmd = DeleteSegmentCommand(
                 self.contour_editor.manager,
@@ -30,7 +30,7 @@ class SegmentActions:
         if self.segment_service:
             self.segment_service.change_layer(seg_index, layer_name)
         elif self.contour_editor:
-            from contour_editor.domain.commands import ChangeSegmentLayerCommand
+            from contour_editor.services.commands import ChangeSegmentLayerCommand
 
             cmd = ChangeSegmentLayerCommand(
                 self.contour_editor.manager,
@@ -54,7 +54,7 @@ class SegmentActions:
             if self.segment_service:
                 self.segment_service.add_segment(layer_name)
             else:
-                from contour_editor.domain.commands import AddSegmentCommand
+                from contour_editor.services.commands import AddSegmentCommand
 
                 cmd = AddSegmentCommand(
                     self.contour_editor.manager,

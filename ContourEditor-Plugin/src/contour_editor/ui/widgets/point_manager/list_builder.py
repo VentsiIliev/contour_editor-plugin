@@ -38,9 +38,9 @@ class ListBuilder:
         self.layers = {}
         self.layer_items = {}
         self.expanded_layers.clear()
-        self.expanded_layers.update({"Workpiece", "Contour", "Fill"})
+        self.expanded_layers.update({"Main", "Contour", "Fill"})
 
-        for name in ["Workpiece", "Contour", "Fill"]:
+        for name in ["Main", "Contour", "Fill"]:
             self._create_layer_item(name)
 
     def rebuild_list(self):
@@ -49,7 +49,7 @@ class ListBuilder:
         self.layer_items = {}
         self.segment_items = {}
 
-        for layer_name in ["Workpiece", "Contour", "Fill"]:
+        for layer_name in ["Main", "Contour", "Fill"]:
             self._create_layer_item(layer_name)
 
             if layer_name in self.expanded_layers:
@@ -160,7 +160,7 @@ class ListBuilder:
             if self.segment_actions.segment_service:
                 self.segment_actions.segment_service.toggle_visibility(seg_index)
             else:
-                from contour_editor.domain.commands import ToggleSegmentVisibilityCommand
+                from contour_editor.services.commands import ToggleSegmentVisibilityCommand
                 cmd = ToggleSegmentVisibilityCommand(
                     self.contour_editor.manager,
                     seg_index

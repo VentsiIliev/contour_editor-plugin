@@ -6,7 +6,7 @@ class ViewportAPI:
     def __init__(self, controller):
         self._ctrl = controller
     def screen_to_image(self, screen_pos: QPointF) -> QPointF:
-        from ..platform.utils.coordinate_utils import map_to_image_space
+        from ..persistence.utils.coordinate_utils import map_to_image_space
         return map_to_image_space(screen_pos, self._ctrl.translation, self._ctrl.scale_factor)
     def image_to_screen(self, image_pos: QPointF) -> QPointF:
         return image_pos * self._ctrl.scale_factor + self._ctrl.translation

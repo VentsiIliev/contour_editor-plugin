@@ -3,7 +3,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QPushButton
 
 import os
-from ...api.providers import IconProvider
+from ...persistence.providers.icon_provider import IconProvider
 
 
 

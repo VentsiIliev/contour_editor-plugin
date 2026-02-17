@@ -13,7 +13,7 @@ from PyQt6.QtCore import QPointF
 @pytest.fixture
 def segment_workflow_setup(mock_manager, mock_command_history, mock_event_bus):
     """Setup for segment workflow tests."""
-    from contour_editor.domain.services.segment_service import SegmentService
+    from contour_editor.services.segment_service import SegmentService
     service = SegmentService(mock_manager, mock_command_history, mock_event_bus)
     return {
         'service': service,
@@ -162,7 +162,7 @@ def test_multiple_segment_operations(segment_workflow_setup):
             # 1. Add three segments
             service.add_segment("Contour")
             service.add_segment("Fill")
-            service.add_segment("Workpiece")
+            service.add_segment("Main")
             assert len(segments) == 3
             # 2. Toggle visibility of first segment
             service.toggle_visibility(0)

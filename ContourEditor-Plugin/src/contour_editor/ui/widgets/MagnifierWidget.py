@@ -6,8 +6,8 @@ from PyQt6.QtCore import Qt, QPointF, QPoint, QTimer
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QPen, QColor, QBrush
 
-from ...platform.config.constants import LAYER_COLORS
-from ...infrastructure.rendering.renderer import draw_ruler, draw_pickup_point
+from ...persistence.config.constants import LAYER_COLORS
+from ...rendering.renderer import draw_ruler, draw_pickup_point
 from PyQt6.QtGui import QPainterPath
 
 

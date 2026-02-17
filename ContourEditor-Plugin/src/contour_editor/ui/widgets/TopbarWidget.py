@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QMessageBox, QApplication
 )
 
-from ...api.providers import IconProvider
+from ...persistence.providers import IconProvider
 
 ICON_WIDTH = 64
 ICON_HEIGHT = 64

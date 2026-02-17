@@ -53,7 +53,7 @@ class SegmentListWidget(QListWidget):
             if self.segment_actions.segment_service:
                 self.segment_actions.segment_service.toggle_visibility(seg_index)
             else:
-                from contour_editor.domain.commands import ToggleSegmentVisibilityCommand
+                from contour_editor.services.commands import ToggleSegmentVisibilityCommand
                 cmd = ToggleSegmentVisibilityCommand(
                     contour_editor.manager,
                     seg_index

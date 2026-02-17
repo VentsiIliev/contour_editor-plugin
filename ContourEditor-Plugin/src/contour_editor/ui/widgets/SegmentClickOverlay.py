@@ -10,7 +10,7 @@ from PyQt6.QtGui import QFont, QPainter, QColor, QPen, QBrush, QIcon
 from ...tests.examples.radial_menu_demo import RadialMenu
 import math
 import os
-from ...api.providers import IconProvider
+from ...persistence.providers.icon_provider import IconProvider
 # GET RESOURCES DIRECTORY
 # This file is at src/contour_editor/ui/widgets/SegmentClickOverlay.py
 # Icons are at src/contour_editor/assets/icons

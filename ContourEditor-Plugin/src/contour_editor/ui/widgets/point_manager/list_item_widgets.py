@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QPushButton, QSizePolicy, QLabel
 )
 from PyQt6.QtGui import QIcon, QFont
-from ....api.providers import IconProvider
+from ....persistence.providers.icon_provider import IconProvider
 
 
 class IndentedWidget(QWidget):

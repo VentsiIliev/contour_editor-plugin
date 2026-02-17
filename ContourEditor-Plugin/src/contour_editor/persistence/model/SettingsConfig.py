@@ -15,6 +15,6 @@ class SettingsConfig:
     combo_field_key: str = ""
 
 
-# WorkpieceFieldConfig will be in a separate file
+# FieldConfig will be in a separate file
 # This is just a placeholder to maintain backward compatibility
 

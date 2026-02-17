@@ -6,7 +6,7 @@ Allows applications to inject their own settings definitions.
 """
 
 from typing import Optional
-from ...api.interfaces import ISettingsProvider
+from ...models.interfaces.interfaces import ISettingsProvider
 
 
 class SettingsProviderRegistry:

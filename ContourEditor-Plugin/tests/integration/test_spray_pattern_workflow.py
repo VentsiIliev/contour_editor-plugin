@@ -14,7 +14,7 @@ from PyQt6.QtCore import QPointF
 @pytest.fixture
 def pattern_workflow_setup(mock_manager):
     """Setup for spray pattern workflow tests."""
-    from contour_editor.domain.services.contour_processing_service import ContourProcessingService
+    from contour_editor.services.contour_processing_service import ContourProcessingService
     service = ContourProcessingService(mock_manager)
     # Sample square contour
     contour = np.array([
@@ -37,8 +37,8 @@ def test_generate_spray_pattern_workflow(pattern_workflow_setup):
     contour = setup['contour']
     # Setup workpiece segment
     workpiece_seg = Mock()
-    workpiece_seg.layer = Mock(name="Workpiece")
-    workpiece_seg.layer.name = "Workpiece"
+    workpiece_seg.layer = Mock(name="Main")
+    workpiece_seg.layer.name = "Main"
     workpiece_seg.points = [
         QPointF(10, 10),
         QPointF(110, 10),
@@ -54,7 +54,7 @@ def test_generate_spray_pattern_workflow(pattern_workflow_setup):
             np.array([[100, 40], [20, 40]]),
         ]
         # Workflow: Extract contour
-        contour_pts = service.get_workpiece_contour_points()
+        contour_pts = service.get_main_contour_points()
         assert contour_pts is not None
         assert contour_pts.shape[0] == 5
         # Workflow: Generate pattern
@@ -133,12 +133,12 @@ def test_pattern_with_layer_management(pattern_workflow_setup, mock_command_hist
     contour_service = setup['service']
     manager = setup['manager']
     contour = setup['contour']
-    from contour_editor.domain.services.segment_service import SegmentService
+    from contour_editor.services.segment_service import SegmentService
     segment_service = SegmentService(manager, mock_command_history, mock_event_bus)
     # Setup workpiece
     workpiece_seg = Mock()
-    workpiece_seg.layer = Mock(name="Workpiece")
-    workpiece_seg.layer.name = "Workpiece"
+    workpiece_seg.layer = Mock(name="Main")
+    workpiece_seg.layer.name = "Main"
     workpiece_seg.points = [QPointF(c[0], c[1]) for c in contour]
     manager.get_segments = Mock(return_value=[workpiece_seg])
     manager.contour_layer = Mock(name="Contour", visible=True)
@@ -149,7 +149,7 @@ def test_pattern_with_layer_management(pattern_workflow_setup, mock_command_hist
             np.array([[20, 30], [100, 30]]),
         ]
         # Workflow: Extract contour
-        contour_pts = contour_service.get_workpiece_contour_points()
+        contour_pts = contour_service.get_main_contour_points()
         assert contour_pts is not None
         # Workflow: Generate pattern
         zigzag = contour_service.generate_spray_pattern(contour_pts, spacing=10.0)

@@ -20,27 +20,40 @@ class SettingsDialogHandler:
         self._show_settings_dialog(seg_index, segment)
 
     def _show_settings_dialog(self, seg_index, segment):
+        from contour_editor.persistence.data.settings_provider_registry import SettingsProviderRegistry
+
         default_settings = get_default_settings()
         combo_key = get_combo_field_key()
         inputKeys = [k for k in default_settings.keys() if k != combo_key]
 
-        # Get glue types from contour editor (fetched via settings manager)
+        # Get material/glue types from settings provider registry
         glue_type_names = []
 
-        if self.contour_editor and hasattr(self.contour_editor, 'settings_manager'):
+        # Try to get from settings provider registry first
+        provider = SettingsProviderRegistry.get_instance().get_provider()
+        if provider:
+            try:
+                glue_type_names = provider.get_available_material_types()
+                print(f"[SettingsDialogHandler] Loaded {len(glue_type_names)} material types from provider")
+            except Exception as e:
+                print(f"[SettingsDialogHandler] Warning: Could not get material types from provider: {e}")
+
+        # Fall back to contour editor's settings manager if available
+        if not glue_type_names and self.contour_editor and hasattr(self.contour_editor, 'settings_manager'):
             try:
                 self.contour_editor.settings_manager._fetch_glue_types()
                 glue_type_names = self.contour_editor.glue_type_names or []
             except Exception as e:
-                print(f"[PointManagerWidget] Warning: Could not fetch glue types: {e}")
+                print(f"[SettingsDialogHandler] Warning: Could not fetch glue types: {e}")
 
         if not glue_type_names:
             QMessageBox.information(
                 self.parent_widget,
                 "Settings Not Available",
                 "Segment settings are not available in standalone mode.\n\n"
-                "This feature requires connection to the glue dispensing controller.\n"
-                "The contour editor is running with limited functionality.",
+                "This feature requires connection to the application controller.\n"
+                "Please configure a SettingsProvider before creating the editor.\n\n"
+                "See API_USAGE.md for configuration examples.",
                 QMessageBox.StandardButton.Ok
             )
             return
@@ -73,7 +86,7 @@ class SettingsDialogHandler:
 
     def update_all_segments_settings(self, settings):
         """Apply the given settings to all segments in the contour editor"""
-        from contour_editor.domain.services.settings_service import SettingsService
+        from contour_editor.services.settings_service import SettingsService
 
         service = SettingsService.get_instance()
         service.apply_to_all_segments(self.contour_editor.manager, settings)

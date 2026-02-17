@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QComboBox, QSizePolicy
 )
 from PyQt6.QtCore import Qt, QSize, QTimer, QPoint  # Add QPoint
-from ...api.providers import IconProvider
+from ...persistence.providers.icon_provider import IconProvider
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QHBoxLayout,
     QPushButton, QComboBox, QSizePolicy, QMenu, QWidgetAction  # Add QMenu, QWidgetAction
@@ -49,7 +49,7 @@ class LayerSelectionPopup(QMenu):
         """)
 
         # Add layer options
-        layers = ["Workpiece", "Contour", "Fill"]
+        layers = ["Main", "Contour", "Fill"]
         for layer in layers:
             action = self.addAction(layer)
             action.triggered.connect(lambda checked, l=layer: self._on_layer_selected(l))

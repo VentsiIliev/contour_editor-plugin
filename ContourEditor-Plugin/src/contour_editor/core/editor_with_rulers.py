@@ -8,10 +8,10 @@ from .editor import ContourEditor
 class ContourEditorWithRulers(QWidget):
     update_camera_feed_requested = pyqtSignal()
 
-    def __init__(self, visionSystem, image_path=None, contours=None, workpiece=None):
+    def __init__(self, visionSystem, image_path=None, contours=None, data=None):
         super().__init__()
         # Inner editor widget (actual painter / logic)
-        self.editor = ContourEditor(visionSystem, image_path=image_path, contours=contours, workpiece=workpiece)
+        self.editor = ContourEditor(visionSystem, image_path=image_path, contours=contours, data=data)
         self.editor.update_camera_feed_requested.connect(self.update_camera_feed_requested)
 
         # Create rulers

@@ -15,7 +15,7 @@ def mock_manager():
     manager = Mock()
     manager.segments = []
     manager.active_segment_index = None
-    manager.external_layer = Mock(name="Workpiece", visible=True, locked=False)
+    manager.external_layer = Mock(name="Main", visible=True, locked=False)
     manager.contour_layer = Mock(name="Contour", visible=True, locked=False)
     manager.fill_layer = Mock(name="Fill", visible=True, locked=False)
     # Common methods
@@ -41,7 +41,7 @@ def mock_event_bus():
 @pytest.fixture
 def mock_command_history():
     """Create a mock CommandHistory."""
-    from contour_editor.commands.command_history import CommandHistory
+    from contour_editor.services.commands.command_history import CommandHistory
     # Reset singleton for testing
     CommandHistory._instance = None
     # Create fresh instance
@@ -129,7 +129,7 @@ def reset_singletons():
 
     # Reset CommandHistory singleton
     try:
-        from contour_editor.commands.command_history import CommandHistory
+        from contour_editor.services.commands.command_history import CommandHistory
         CommandHistory._instance = None
     except Exception:
         pass
@@ -144,7 +144,7 @@ def reset_singletons():
         pass
 
     try:
-        from contour_editor.commands.command_history import CommandHistory
+        from contour_editor.services.commands.command_history import CommandHistory
         CommandHistory._instance = None
     except Exception:
         pass
@@ -187,8 +187,8 @@ def sample_segments():
     seg2.points = [QPointF(20, 20), QPointF(80, 20), QPointF(80, 80), QPointF(20, 80)]
     seg2.controls = []
     seg2.visible = False
-    seg2.layer = Mock(name="Workpiece")
-    seg2.layer.name = "Workpiece"
+    seg2.layer = Mock(name="Main")
+    seg2.layer.name = "Main"
     seg2.layer.visible = True
     seg2.layer.locked = False
     seg2.set_settings = Mock()

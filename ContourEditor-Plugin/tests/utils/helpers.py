@@ -62,11 +62,11 @@ def create_mock_manager_with_segments(num_segments=3, layer_name="Contour"):
     manager.set_segment_visibility = Mock()
     manager.set_active_segment = Mock()
     # Add layer mocks
-    manager.external_layer = create_mock_layer("Workpiece")
+    manager.external_layer = create_mock_layer("Main")
     manager.contour_layer = create_mock_layer("Contour")
     manager.fill_layer = create_mock_layer("Fill")
     manager.getLayer = Mock(side_effect=lambda name: {
-        "Workpiece": manager.external_layer,
+        "Main": manager.external_layer,
         "Contour": manager.contour_layer,
         "Fill": manager.fill_layer
     }.get(name))

@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QTimer
 
-from ...api.providers import WidgetProvider
+from ...persistence.providers.widget_provider import WidgetProvider
 
 
 class SpacingDialog(QDialog):

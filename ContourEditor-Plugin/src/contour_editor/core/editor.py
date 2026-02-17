@@ -3,24 +3,23 @@ from PyQt6.QtGui import QPainter
 from PyQt6.QtWidgets import QFrame
 
 
-from ..platform.config import constants
-from ..domain.controllers.SegmentActionController import SegmentActionController
-from ..domain.controllers.viewport_controller import ViewportController
-from ..domain.managers.selection_manager import SelectionManager
-from ..domain.managers.tool_manager import ToolManager
-from ..domain.managers.mode_manager import ModeManager
-from ..domain.managers.overlay_manager import OverlayManager
-from ..domain.managers.settings_manager import SettingsManager
-from ..domain.managers.data_export_manager import DataExportManager
-from ..domain.managers.event_manager import EventManager
-from ..domain.managers.layer_manager import LayerManager
-from ..domain.managers.workpiece_manager import WorkpieceManager
-from ..infrastructure.rendering.editor_renderer import EditorRenderer
-from ..api.interfaces import Segment, Layer
+from ..persistence.config import constants
+from ..controllers.SegmentActionController import SegmentActionController
+from ..controllers.viewport_controller import ViewportController
+from ..controllers.managers.selection_manager import SelectionManager
+from ..controllers.managers.tool_manager import ToolManager
+from ..controllers.managers.mode_manager import ModeManager
+from ..controllers.managers.overlay_manager import OverlayManager
+from ..controllers.managers.settings_manager import SettingsManager
+from ..controllers.managers.data_export_manager import DataExportManager
+from ..controllers.managers.event_manager import EventManager
+from ..controllers.managers.layer_manager import LayerManager
+from ..rendering.editor_renderer import EditorRenderer
+from ..models.segment import Segment, Layer
 from ..persistence.data.segment_provider import SegmentManagerProvider
 from ..core.event_bus import EventBus
-from ..domain.commands.command_history import CommandHistory
-from ..domain.services.segment_service import SegmentService
+from ..services.commands.command_history import CommandHistory
+from ..services.segment_service import SegmentService
 
 
 class ContourEditor(QFrame):
@@ -30,7 +29,7 @@ class ContourEditor(QFrame):
     fetch_glue_types_requested = pyqtSignal()  # Signal to request glue types from controller
     glue_types_received = pyqtSignal(list)  # Signal to receive glue types (list of names)
 
-    def __init__(self, visionSystem, image_path=None, contours=None, parent=None, workpiece=None):
+    def __init__(self, visionSystem, image_path=None, contours=None, parent=None, data=None):
         super().__init__()
 
         # Subscribe to EventBus for automatic canvas repainting
@@ -48,7 +47,10 @@ class ContourEditor(QFrame):
         self.overlay_manager = OverlayManager(self)
         self.data_export_manager = DataExportManager(self)
         self.layer_manager = LayerManager(self)
-        self.workpiece_manager = WorkpieceManager(self)
+
+        # external manager is optional and can be injected externally (e.g., by workpiece_editor)
+        # This keeps the core editor domain-agnostic
+        self.workpiece_manager = None
 
         self.parent = parent
         self.setWindowTitle("Editable Bezier Curves")
@@ -95,14 +97,16 @@ class ContourEditor(QFrame):
         # Highlighted line segment for measurement display (TODO: Move to RenderingManager)
         self.highlighted_line_segment = None  # (seg_index, line_index) or None
 
-        # Initialize workpiece
-        if workpiece is None:
-            if contours is not None:
-                self.workpiece_manager.init_contour(contours)
-        else:
-            self.workpiece_manager.set_current_workpiece(workpiece)
-            print(f"Set workpiece in ContourEditor: {workpiece}")
-            self.workpiece_manager.load_workpiece(workpiece)
+        # Initialize data if workpiece_manager is available (injected by workpiece_editor)
+        # Generic contour_editor doesn't have workpiece_manager
+        if self.workpiece_manager:
+            if data is None:
+                if contours is not None:
+                    self.workpiece_manager.init_contour(contours)
+            else:
+                self.workpiece_manager.set_current_workpiece(data)
+                print(f"Set data in ContourEditor: {data}")
+                self.workpiece_manager.load_workpiece(data)
 
     def _connect_event_bus(self):
         """Subscribe to EventBus events that require canvas repaint"""
@@ -275,22 +279,28 @@ class ContourEditor(QFrame):
     def last_drag_pos(self, value):
         self.event_manager.last_drag_pos = value
     
-    # Workpiece-related property accessors for backward compatibility
+    # Data-related property accessors (optional, only if workpiece_manager is injected)
     @property
     def workpiece(self):
-        return self.workpiece_manager.current_workpiece
-    
+        """Get current workpiece if workpiece_manager is available"""
+        return self.workpiece_manager.current_workpiece if self.workpiece_manager else None
+
     @workpiece.setter
     def workpiece(self, value):
-        self.workpiece_manager.current_workpiece = value
-    
+        """Set current workpiece if workpiece_manager is available"""
+        if self.workpiece_manager:
+            self.workpiece_manager.current_workpiece = value
+
     @property
     def contours(self):
-        return self.workpiece_manager.contours
-    
+        """Get contours if workpiece_manager is available"""
+        return self.workpiece_manager.contours if self.workpiece_manager else None
+
     @contours.setter
     def contours(self, value):
-        self.workpiece_manager.contours = value
+        """Set contours if workpiece_manager is available"""
+        if self.workpiece_manager:
+            self.workpiece_manager.contours = value
 
     """ TOOLS """
 
@@ -327,13 +337,12 @@ class ContourEditor(QFrame):
 
     """ WORKPIECE/CONTOURS INITIALIZATION METHODS """
 
-
     def load_workpiece(self, workpiece):
-        """Load a workpiece - delegates to WorkpieceManager"""
+        """Load a workpiece - delegates to external manager"""
         return self.workpiece_manager.load_workpiece(workpiece)
 
     def initContour(self, contours_by_layer, close_contour=True):
-        """Initialize contours - delegates to WorkpieceManager"""
+        """Initialize contours - delegates to external manager"""
         return self.workpiece_manager.init_contour(contours_by_layer, close_contour)
 
     """ IMAGE HANDLING METHODS - Delegated to ViewportController """
@@ -350,7 +359,7 @@ class ContourEditor(QFrame):
     """ SEGMENT MANAGEMENT METHODS """
 
     def delete_segment(self, seg_index):
-        """Delete a segment - delegates to WorkpieceManager"""
+        """Delete a segment - delegates to external manager"""
         self.segment_action_controller.delete_segment(seg_index)
         self.update()
         self.pointsUpdated.emit()
@@ -421,7 +430,7 @@ class ContourEditor(QFrame):
             self.drag_timer.stop()
 
     def addNewSegment(self, layer_name="Contour"):
-        """Add new segment - delegates to WorkpieceManager"""
+        """Add new segment - delegates to external manager"""
         new_segment = self.segment_action_controller.add_new_segment(layer_name)
         self.update()
         self.pointsUpdated.emit()
@@ -461,5 +470,5 @@ class ContourEditor(QFrame):
         self.settings_manager.show_global_settings()
 
     def reset_editor(self):
-        """Reset editor - delegates to WorkpieceManager"""
+        """Reset editor - delegates to external manager"""
         self.workpiece_manager.clear_workpiece()

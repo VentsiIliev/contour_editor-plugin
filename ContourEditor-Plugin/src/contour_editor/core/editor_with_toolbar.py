@@ -1,8 +1,8 @@
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget, QGridLayout
 
-from ..platform.config import constants
-from ..platform.config.constants import EDIT_MODE, DRAG_MODE
+from ..persistence.config import constants
+from ..persistence.config.constants import EDIT_MODE, DRAG_MODE
 from .editor_with_rulers import ContourEditorWithRulers
 from ..ui.widgets.BottomToolBar import BottomToolBar
 
@@ -10,12 +10,12 @@ from ..ui.widgets.BottomToolBar import BottomToolBar
 class ContourEditorWithBottomToolBar(QWidget):
     """Decorator that wraps ContourEditorWithRulers and adds zoom controls at bottom center"""
     update_camera_feed_requested = pyqtSignal()
-    def __init__(self, visionSystem, image_path=None, contours=None, workpiece=None):
+    def __init__(self, visionSystem, image_path=None, contours=None, data=None):
         super().__init__()
 
         # Create the editor with rulers
         self.editor_with_rulers = ContourEditorWithRulers(visionSystem, image_path=image_path, contours=contours,
-                                                          workpiece=workpiece)
+                                                          data=data)
         self.editor_with_rulers.update_camera_feed_requested.connect(self.update_camera_feed_requested)
 
         # Create zoom controls
@@ -89,11 +89,11 @@ class ContourEditorWithBottomToolBar(QWidget):
         main_layout.addWidget(QWidget(), 1, 2)  # spacer right
 
         # Set column stretch to center the zoom controls
-        main_layout.setColumnStretch(0, 1)  # left spacer gets extra space
+        main_layout.setColumnStretch(0, 1)  # the left spacer gets extra space
         main_layout.setColumnStretch(1, 0)  # zoom controls fixed size
-        main_layout.setColumnStretch(2, 1)  # right spacer gets extra space
+        main_layout.setColumnStretch(2, 1)  # the right spacer gets extra space
 
-        # Set row stretch to keep zoom controls at bottom
+        # Set row stretch to keep zoom controls at the bottom
         main_layout.setRowStretch(0, 1)  # editor gets most space
         main_layout.setRowStretch(1, 0)  # zoom controls fixed height
 

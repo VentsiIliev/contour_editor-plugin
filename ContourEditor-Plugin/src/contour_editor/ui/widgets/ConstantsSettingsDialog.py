@@ -7,10 +7,10 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QTabWidget,
                              QLabel, QCheckBox,
                              QPushButton, QWidget, QGridLayout, QGroupBox,
                              QColorDialog, QScrollArea, QComboBox, QSpinBox, QDoubleSpinBox)
-from ...api.providers import WidgetProvider
+from ...persistence.providers.widget_provider import WidgetProvider
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QColor
-from ...platform.config.constants_manager import ConstantsManager
+from ...persistence.config.constants_manager import ConstantsManager
 
 
 class ColorButton(QPushButton):

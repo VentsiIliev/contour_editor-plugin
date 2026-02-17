@@ -1,7 +1,7 @@
 from PyQt6.QtCore import pyqtSignal, QSize
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPen, QColor
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QSizePolicy
-from ...api.providers import IconProvider
+from ...persistence.providers import IconProvider
 
 
 class BottomToolBar(QWidget):

@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout, QDoubleSpinBox
 
-from ...api.providers import WidgetProvider
+from ...persistence.providers.widget_provider import WidgetProvider
 
 
 class LayerAndValueInputDialog(QDialog):
