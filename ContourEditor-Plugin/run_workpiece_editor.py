@@ -6,16 +6,111 @@ Includes forms, workpiece adapters, and domain-specific features.
 """
 import os
 import sys
+from enum import Enum
 
-# Add src to path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, 'src')
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QLabel, QPushButton
+
+from PyQt6.QtWidgets import QApplication
 from workpiece_editor import WorkpieceEditorBuilder
 from workpiece_editor.handlers import SaveWorkpieceHandler
 from contour_editor import BezierSegmentManager, SettingsConfig, SettingsGroup, ISettingsProvider
+from workpiece_editor.ui.CreateWorkpieceForm import CreateWorkpieceForm, FormFieldConfig, GenericFormConfig
+
+
+def get_icon_path(icon_name):
+    base_path = os.path.join(os.path.dirname(__file__), 'src', 'workpiece_editor', 'assets', 'icons')
+    icon_file = f"{icon_name}.png"
+    full_path = os.path.join(base_path, icon_file)
+    return full_path if os.path.exists(full_path) else ""
+
+
+def get_contour_icon_path(icon_name):
+    base_path = os.path.join(os.path.dirname(__file__), 'src', 'contour_editor', 'assets', 'icons')
+    icon_file = f"{icon_name}.png"
+    full_path = os.path.join(base_path, icon_file)
+    return full_path if os.path.exists(full_path) else ""
+
+
+def create_workpiece_form_config(glue_types=None) -> GenericFormConfig:
+    if glue_types is None:
+        glue_types = ["Type A", "Type B", "Type C"]
+
+    fields = [
+        FormFieldConfig(
+            field_id="workpieceId",
+            field_type="text",
+            label="Workpiece ID",
+            icon_path=get_icon_path("WOPIECE_ID_ICON_2"),
+            placeholder="",
+            mandatory=True,
+            visible=True
+        ),
+        FormFieldConfig(
+            field_id="name",
+            field_type="text",
+            label="Name",
+            icon_path=get_icon_path("WORKPIECE_NAME_ICON"),
+            placeholder="",
+            mandatory=False,
+            visible=True
+        ),
+        FormFieldConfig(
+            field_id="description",
+            field_type="text",
+            label="Description",
+            icon_path=get_icon_path("DESCRIPTION_WORKPIECE_BUTTON_SQUARE"),
+            placeholder="",
+            mandatory=False,
+            visible=True
+        ),
+        FormFieldConfig(
+            field_id="height",
+            field_type="text",
+            label="Height",
+            icon_path=get_contour_icon_path("RULER_ICON"),
+            placeholder="",
+            mandatory=True,
+            visible=True
+        ),
+        FormFieldConfig(
+            field_id="glue_qty",
+            field_type="text",
+            label="Glue Quantity",
+            icon_path=get_icon_path("glue_qty"),
+            placeholder="g /m²",
+            mandatory=False,
+            visible=True
+        ),
+        FormFieldConfig(
+            field_id="gripper_id",
+            field_type="dropdown",
+            label="Gripper",
+            icon_path=get_icon_path("GRIPPER_ID_ICON"),
+            options=["Gripper1", "Gripper2", "Gripper3"],
+            mandatory=False,
+            visible=True
+        ),
+        FormFieldConfig(
+            field_id="glue_type",
+            field_type="dropdown",
+            label="Glue Type",
+            icon_path=get_icon_path("GLUE_TYPE_ICON"),
+            options=glue_types,
+            mandatory=True,
+            visible=True
+        ),
+    ]
+
+    return GenericFormConfig(
+        form_title="Create Workpiece",
+        fields=fields,
+        accept_button_icon="",
+        cancel_button_icon="",
+        config_file="settings/workpiece_form_config.json"
+    )
 
 
 class WorkpieceSettingsProvider(ISettingsProvider):
@@ -23,9 +118,9 @@ class WorkpieceSettingsProvider(ISettingsProvider):
 
     def __init__(self):
         self._default_settings = {
-            "speed": "100",
-            "power": "50",
-            "passes": "1",
+            "Setting 1": "100",
+            "Setting 2": "50",
+            "Setting 3": "1",
             "glue_type": "Type A"
         }
 
@@ -51,102 +146,30 @@ class WorkpieceSettingsProvider(ISettingsProvider):
         return [("Settings", list(self._default_settings.keys()))]
 
 
-class TestWorkpieceForm(QWidget):
-    """Test form for workpiece data"""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.onSubmitCallBack = None
-        self.setup_ui()
-
-    def setup_ui(self):
-        layout = QVBoxLayout(self)
-        # Workpiece Name
-        layout.addWidget(QLabel("Workpiece Name:"))
-        self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText("Enter workpiece name...")
-        layout.addWidget(self.name_input)
-        # Workpiece ID
-        layout.addWidget(QLabel("Workpiece ID:"))
-        self.id_input = QLineEdit()
-        self.id_input.setPlaceholderText("Enter ID...")
-        layout.addWidget(self.id_input)
-        # Description
-        layout.addWidget(QLabel("Description:"))
-        self.description_input = QLineEdit()
-        self.description_input.setPlaceholderText("Enter description...")
-        layout.addWidget(self.description_input)
-        # Material
-        layout.addWidget(QLabel("Material:"))
-        self.material_input = QLineEdit()
-        self.material_input.setPlaceholderText("Enter material type...")
-        layout.addWidget(self.material_input)
-        # Submit button
-        self.submit_btn = QPushButton("Save Workpiece Data")
-        self.submit_btn.clicked.connect(self.on_submit_clicked)
-        layout.addWidget(self.submit_btn)
-        layout.addStretch()
-
-    def get_data(self):
-        """Get form data as dictionary"""
-        return {
-            "name": self.name_input.text(),
-            "workpieceId": self.id_input.text(),
-            "description": self.description_input.text(),
-            "material": self.material_input.text()
-        }
-
-    def on_submit_clicked(self):
-        """Handle submit button click"""
-        data = self.get_data()
-        print(f"\n📋 Workpiece Data Submitted:")
-        for key, value in data.items():
-            print(f"   {key}: {value}")
-        print()
-        if self.onSubmitCallBack:
-            result = self.onSubmitCallBack(data)
-            print(f"   Callback result: {result}")
-
-    def onSubmit(self):
-        """Called when form should be submitted"""
-        data = self.get_data()
-        print(f"📝 onSubmit called with data: {data}")
-        return True
-
-    def validate(self):
-        """Validate form data"""
-        data = self.get_data()
-        if not data["name"]:
-            return False, "Workpiece name is required"
-        if not data["workpieceId"]:
-            return False, "Workpiece ID is required"
-        return True, ""
-
-    def clear(self):
-        """Clear form fields"""
-        self.name_input.clear()
-        self.id_input.clear()
-        self.description_input.clear()
-        self.material_input.clear()
-        print("🧹 Workpiece form cleared")
-
-    def prefill_form(self, data):
-        """Prefill form with data"""
-        if isinstance(data, dict):
-            self.name_input.setText(data.get("name", ""))
-            self.id_input.setText(data.get("workpieceId", ""))
-            self.description_input.setText(data.get("description", ""))
-            self.material_input.setText(data.get("material", ""))
-            print(f"📥 Workpiece form prefilled with: {data}")
-
-
 class WorkpieceFormFactory:
-    """Factory for creating workpiece forms"""
 
     def create_form(self, parent=None):
-        print("🏭 Creating workpiece form instance...")
-        form = TestWorkpieceForm(parent)
+        print("🏭 Creating workpiece form...")
+
+        glue_types = ["Type A", "Type B", "Type C"]
+        try:
+            from modules.shared.tools.glue_monitor_system.core.cell_manager import GlueCellsManagerSingleton
+            cells_manager = GlueCellsManagerSingleton.get_instance()
+            glue_types = [cell.glueType for cell in cells_manager.cells]
+            if glue_types:
+                print(f"   ✅ Loaded {len(glue_types)} glue types from cell configuration")
+        except Exception as e:
+            print(f"   ⚠️  Using default glue types (could not load from cells: {e})")
+
+        form_config = create_workpiece_form_config(glue_types)
+
+        form = CreateWorkpieceForm(
+            parent=parent,
+            form_config=form_config,
+            showButtons=False
+        )
         form.setFixedWidth(400)
+        print("✅ Workpiece form created")
         return form
 
 
