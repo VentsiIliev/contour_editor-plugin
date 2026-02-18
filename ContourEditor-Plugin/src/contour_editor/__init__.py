@@ -111,3 +111,5 @@ __all__ = [
     'BezierSegmentManager',
 ]
 
+# Version information
+from ._version import __version__, __version_info__
