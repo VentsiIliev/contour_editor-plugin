@@ -1,3 +1,0 @@
-"""
-Workpiece Editor Test Package
-"""
