@@ -437,7 +437,6 @@ class ContourEditor(QFrame):
         return  new_segment
 
     def paintEvent(self, event):
-        print(f"[PAINT EVENT] Starting paint, segments visible states: {[s.visible for s in self.manager.get_segments()]}")
         painter = QPainter(self)
         self.renderer.render(painter, event)
         painter.end()

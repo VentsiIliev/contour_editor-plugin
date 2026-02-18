@@ -8,13 +8,10 @@ class SegmentRenderer:
         self.ctx = context
     def render_all(self, painter):
         segments = self.ctx.segments.all()
-        print(f"[RENDER DEBUG] Drawing segments, total: {len(segments)}")
         for idx, segment in enumerate(segments):
-            print(f"[RENDER DEBUG] Segment {idx}: visible={segment.visible}")
             if segment.visible:
                 self._render_segment(painter, segment, idx)
-            else:
-                print(f"[RENDER DEBUG] Skipping segment {idx} (not visible)")
+
     def _render_segment(self, painter, segment, seg_index):
         editor = self.ctx.widget
         points = segment.points

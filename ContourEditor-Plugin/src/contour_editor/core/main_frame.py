@@ -387,13 +387,54 @@ class MainApplicationFrame(QFrame):
 
     def onStart(self):
         """
-        Handle start/execute button press - emit signal for handlers to implement logic.
+        Handle start/execute button press - emit signal with complete data package.
 
-        Domain-agnostic - just emits start_requested signal.
-        Applications should connect to this signal and implement their own execution logic.
+        Domain-agnostic - collects both form and editor data, emits start_requested and execute_requested signals.
+        Applications should connect to these signals and implement their own execution logic.
+
+        Emits:
+            start_requested signal (no data)
+            execute_requested signal with dict containing:
+                - 'form_data': Dictionary from the form (if form exists), or empty dict
+                - 'editor_data': ContourEditorData from the editor
         """
-        print("[MainApplicationFrame] Start requested - emitting start_requested signal")
-        self.start_requested.emit()
+        print("[MainApplicationFrame] Start/Execute requested - collecting complete data")
+
+        try:
+            # Get form data if form exists, ensure it's a dict
+            if self.additional_data_form:
+                form_data = self.additional_data_form.get_data()
+                # Handle None or non-dict returns
+                if form_data is None or not isinstance(form_data, dict):
+                    form_data = {}
+                print(f"[MainApplicationFrame] Form data collected: {list(form_data.keys())}")
+            else:
+                form_data = {}
+                print("[MainApplicationFrame] No form available")
+
+            # Export editor data (domain-agnostic ContourEditorData)
+            from contour_editor.persistence.data.editor_data_model import ContourEditorData
+            editor_data = ContourEditorData.from_manager(self.contourEditor.manager)
+
+            # Create complete data package
+            complete_package = {
+                'form_data': form_data,
+                'editor_data': editor_data
+            }
+
+            stats = editor_data.get_statistics()
+            print(f"[MainApplicationFrame] Editor data: {stats['total_segments']} segments, {stats['total_points']} points")
+
+            # Emit signals
+            self.start_requested.emit()
+            self.execute_requested.emit(complete_package)
+            print("✅ Execute requested signal emitted with complete data package")
+
+        except Exception as e:
+            print(f"❌ Error collecting data for execution: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "Error", f"Failed to collect data for execution: {e}")
 
     def on_data_save_clicked(self):
         """

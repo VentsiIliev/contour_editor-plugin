@@ -5,6 +5,8 @@ import numpy as np
 from workpiece_editor.managers import WorkpieceManager
 from contour_editor.models.segment import Segment, Layer
 from contour_editor.persistence.data.editor_data_model import ContourEditorData
+
+
 @pytest.fixture
 def mock_editor():
     editor = Mock()
@@ -20,17 +22,24 @@ def mock_editor():
     editor.pointsUpdated = Mock()
     editor.pointsUpdated.emit = Mock()
     return editor
+
+
 @pytest.fixture
 def workpiece_manager(mock_editor):
     return WorkpieceManager(mock_editor)
+
+
 class TestWorkpieceManagerInitialization:
     def test_initialization(self, workpiece_manager, mock_editor):
         assert workpiece_manager.editor == mock_editor
         assert workpiece_manager.current_workpiece is None
         assert workpiece_manager.contours is None
+
     def test_initialization_with_none_editor(self):
         manager = WorkpieceManager(None)
         assert manager.editor is None
+
+
 class TestWorkpieceManagerLoadWorkpiece:
     def test_load_workpiece_basic(self, workpiece_manager):
         workpiece = Mock()
@@ -40,6 +49,7 @@ class TestWorkpieceManagerLoadWorkpiece:
             result = workpiece_manager.load_workpiece(workpiece)
             assert result == workpiece
             assert workpiece_manager.current_workpiece == workpiece
+
     def test_load_workpiece_with_contours(self, workpiece_manager, mock_editor):
         workpiece = Mock()
         contours_by_layer = {
@@ -50,6 +60,8 @@ class TestWorkpieceManagerLoadWorkpiece:
             mock_load.return_value = (workpiece, contours_by_layer)
             workpiece_manager.load_workpiece(workpiece)
             assert workpiece_manager.current_workpiece == workpiece
+
+
 class TestWorkpieceManagerInitContour:
     def test_init_contour_basic(self, workpiece_manager, mock_editor):
         contours_by_layer = {
@@ -59,6 +71,7 @@ class TestWorkpieceManagerInitContour:
         workpiece_manager.init_contour(contours_by_layer)
         assert workpiece_manager.contours == contours_by_layer
         mock_editor.pointsUpdated.emit.assert_called()
+
     def test_init_contour_multiple_layers(self, workpiece_manager, mock_editor):
         contours_by_layer = {
             "Main": [np.array([[10, 10], [100, 10]], dtype=np.float32)],
@@ -67,6 +80,8 @@ class TestWorkpieceManagerInitContour:
         mock_editor.manager.contour_to_bezier.return_value = [Mock()]
         workpiece_manager.init_contour(contours_by_layer)
         assert workpiece_manager.contours == contours_by_layer
+
+
 class TestWorkpieceManagerClearWorkpiece:
     def test_clear_workpiece(self, workpiece_manager):
         workpiece_manager.current_workpiece = Mock()
@@ -74,16 +89,21 @@ class TestWorkpieceManagerClearWorkpiece:
         workpiece_manager.clear_workpiece()
         assert workpiece_manager.current_workpiece is None
         assert workpiece_manager.contours is None
+
+
 class TestWorkpieceManagerSetCurrentWorkpiece:
     def test_set_current_workpiece(self, workpiece_manager):
         workpiece = Mock()
         workpiece_manager.set_current_workpiece(workpiece)
         assert workpiece_manager.current_workpiece == workpiece
+
     def test_get_current_workpiece(self, workpiece_manager):
         workpiece = Mock()
         workpiece_manager.current_workpiece = workpiece
         result = workpiece_manager.get_current_workpiece()
         assert result == workpiece
+
+
 class TestWorkpieceManagerStatistics:
     def test_get_workpiece_statistics(self, workpiece_manager, mock_editor):
         workpiece_manager.current_workpiece = Mock()
@@ -94,8 +114,11 @@ class TestWorkpieceManagerStatistics:
         stats = workpiece_manager.get_workpiece_statistics()
         assert stats is not None
         assert stats["total_segments"] == 1
+
+
 class TestWorkpieceManagerEdgeCases:
     """Test edge cases in manager functionality"""
+
     def test_load_workpiece_with_corrupted_data(self, workpiece_manager):
         """Test loading workpiece with corrupted/invalid data"""
         workpiece = Mock()
@@ -106,6 +129,7 @@ class TestWorkpieceManagerEdgeCases:
             result = workpiece_manager.load_workpiece(workpiece)
             # Should handle corrupted data gracefully
             assert result is None or result == workpiece
+
     def test_export_editor_data_with_no_segments(self, workpiece_manager, mock_editor):
         """Test exporting editor data when no segments exist"""
         mock_editor.manager.get_segments.return_value = []
@@ -113,6 +137,7 @@ class TestWorkpieceManagerEdgeCases:
         assert result is not None
         # Should return valid ContourEditorData even with no segments
         assert hasattr(result, 'layers')
+
     def test_export_workpiece_data_with_invalid_layers(self, workpiece_manager, mock_editor):
         """Test exporting workpiece data with invalid layer configuration"""
         # Set up segments but no proper layers
@@ -125,6 +150,7 @@ class TestWorkpieceManagerEdgeCases:
         except Exception:
             # Expected behavior - invalid configuration
             assert True
+
     def test_init_contour_with_duplicate_layers(self, workpiece_manager, mock_editor):
         """Test initialization with duplicate layer names"""
         contours_by_layer = {
@@ -135,8 +161,11 @@ class TestWorkpieceManagerEdgeCases:
         # Should handle duplicate keys (last one wins in dict)
         workpiece_manager.init_contour(contours_by_layer)
         assert workpiece_manager.contours is not None
+
+
 class TestWorkpieceManagerPerformance:
     """Test performance characteristics of manager"""
+
     def test_load_large_workpiece(self, workpiece_manager, mock_editor):
         """Test loading workpiece with large contour data"""
         workpiece = Mock()
@@ -153,6 +182,7 @@ class TestWorkpieceManagerPerformance:
             result = workpiece_manager.load_workpiece(workpiece)
             assert result == workpiece
             assert workpiece_manager.contours is not None
+
     def test_export_large_contour_data(self, workpiece_manager, mock_editor):
         """Test exporting large contour data"""
         # Create many segments with many points
@@ -167,6 +197,7 @@ class TestWorkpieceManagerPerformance:
         mock_editor.manager.get_segments.return_value = large_segments
         result = workpiece_manager.export_editor_data()
         assert result is not None
+
     def test_multiple_load_export_cycles(self, workpiece_manager, mock_editor):
         """Test multiple load/export cycles for memory leaks"""
         workpiece = Mock()
@@ -184,6 +215,7 @@ class TestWorkpieceManagerPerformance:
                 workpiece_manager.clear_workpiece()
             # Should complete without memory issues
             assert True
+
     def test_memory_cleanup_after_clear(self, workpiece_manager):
         """Test that clear_workpiece properly cleans up memory"""
         # Set up some data

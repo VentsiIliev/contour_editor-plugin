@@ -59,13 +59,10 @@ def draw_ruler(contour_editor,painter):
 
 def draw_segments(contour_editor,painter,bezier_manager):
     segments = contour_editor.manager.get_segments()
-    print(f"[RENDER DEBUG] Drawing segments, total: {len(segments)}")
     for idx, segment in enumerate(segments):
-        print(f"[RENDER DEBUG] Segment {idx}: visible={segment.visible}")
         if segment.visible:
             draw_bezier_segment(contour_editor,painter, segment, idx)
-        else:
-            print(f"[RENDER DEBUG] Skipping segment {idx} (not visible)")
+
 
 def draw_pickup_point(contour_editor,painter):
     # Draw pickup point if set
