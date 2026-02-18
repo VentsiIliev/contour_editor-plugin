@@ -1,0 +1,33 @@
+Metadata-Version: 2.4
+Name: contour-editor-plugin
+Version: 1.0.0
+Summary: Contour and Workpiece Editor Plugin for PyQt6 applications
+Author-email: ILV Team <dev@example.com>
+License-Expression: MIT
+Keywords: contour,editor,workpiece,pyqt6,bezier,segments
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Framework :: Qt
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: PyQt6>=6.4.0
+Requires-Dist: numpy>=1.20.0
+Requires-Dist: matplotlib>=3.5.0
+Requires-Dist: opencv-python>=4.5.0
+Requires-Dist: Pillow>=9.0.0
+Requires-Dist: shapely>=2.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: pytest-qt>=4.0.0; extra == "dev"
+Requires-Dist: black>=22.0.0; extra == "dev"
+Requires-Dist: flake8>=4.0.0; extra == "dev"
+Dynamic: license-file

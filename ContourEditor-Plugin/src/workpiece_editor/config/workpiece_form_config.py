@@ -85,6 +85,14 @@ def create_workpiece_form_config(glue_types=None) -> GenericFormConfig:
             mandatory=True,
             visible=True
         ),
+        FormFieldConfig(
+            field_id="test",
+            field_type="text",
+            label="test test",
+            icon_path=get_icon_path("GLUE_TYPE_ICON"),
+            mandatory=True,
+            visible=True
+        )
     ]
 
     return GenericFormConfig(

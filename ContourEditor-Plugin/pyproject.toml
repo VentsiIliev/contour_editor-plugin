@@ -32,6 +32,7 @@ dependencies = [
     "matplotlib>=3.5.0",
     "opencv-python>=4.5.0",
     "Pillow>=9.0.0",
+    "shapely>=2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -49,8 +50,8 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["contour_editor*", "workpiece_editor*"]
-exclude = ["tests*", "*.tests", "*.tests.*"]
+include = ["contour_editor*"]
+exclude = ["tests*", "*.tests", "*.tests.*", "workpiece_editor*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
