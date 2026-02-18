@@ -3,6 +3,7 @@ from typing import Dict, Any
 from contour_editor.persistence.providers.dialog_provider import DialogProvider
 from ..adapters.workpiece_adapter import WorkpieceAdapter
 from contour_editor.persistence.data.editor_data_model import ContourEditorData
+from ..models.workpiece_field_provider import WorkpieceFieldProvider
 
 
 class SaveWorkpieceHandler:
@@ -71,6 +72,10 @@ class SaveWorkpieceHandler:
         workpiece_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         complete_data = form_data.copy()
+
+        # Get Field enum from provider
+        field_provider = WorkpieceFieldProvider.get_instance()
+        Field = field_provider.get_field_enum()
 
         if workpiece_data.get("main_contour") is not None:
             contour_data = {
