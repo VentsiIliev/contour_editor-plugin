@@ -5,11 +5,12 @@ This builder automatically configures workpiece-specific handlers, adapters,
 and managers.
 """
 from typing import Optional, Callable, Any
-from contour_editor import ContourEditorBuilder
+from contour_editor import ContourEditorBuilder, BezierSegmentManager, SettingsConfig, SettingsGroup
 from contour_editor.core.main_frame import MainApplicationFrame
 from .managers.workpiece_manager import WorkpieceManager
-from .handlers import SaveWorkpieceHandler, CaptureDataHandler, StartHandler, CaptureHandler
-from .adapters import WorkpieceAdapter
+from .handlers import StartHandler, CaptureHandler
+from .config.segment_settings_provider import SegmentSettingsProvider
+from .config.workpiece_form_factory import WorkpieceFormFactory
 
 
 class WorkpieceEditorBuilder:
@@ -122,3 +123,59 @@ class WorkpieceEditorBuilder:
     def get_workpiece_manager(self) -> Optional[WorkpieceManager]:
         """Get the WorkpieceManager instance (available after build())"""
         return self._workpiece_manager
+
+
+def build_workpiece_editor():
+    provider = SegmentSettingsProvider()
+
+    config = SettingsConfig(
+        default_settings=provider.get_default_values(),
+        groups=[
+            SettingsGroup("Workpiece Settings", provider.get_all_setting_keys())
+        ]
+    )
+    # Create workpiece form factory
+    print("📝 Creating workpiece form factory...")
+    form_factory = WorkpieceFormFactory(glue_types=provider.get_available_material_types())
+    # Build workpiece editor with form first (so we can access it in callback)
+    print("🔨 Building workpiece editor...")
+    editor = (WorkpieceEditorBuilder()
+              .with_segment_manager(BezierSegmentManager)
+              .with_settings(config, provider)
+              .with_form(form_factory)
+              .build())
+
+    # Define save callback (receives complete package with form + editor data)
+    def on_save_callback(data_package):
+        """Handle save button press - receives a complete data package from the editor"""
+        print("SAVE CALLBACK TRIGGERED")
+
+        # Extract form_data and editor_data from the package
+        form_data = data_package.get('form_data', {})
+        editor_data = data_package.get('editor_data')
+
+        # Convert editor_data to workpiece format using WorkpieceAdapter
+        try:
+            from .adapters import WorkpieceAdapter
+
+            # Convert ContourEditorData to workpiece data format
+            workpiece_data = WorkpieceAdapter.to_workpiece_data(editor_data)
+
+            complete_data = {**form_data, **workpiece_data}
+            print(f"Complete data: {complete_data}")
+
+            return True, "Workpiece data prepared successfully!"
+
+        except Exception as e:
+            print(f"\n❌ ERROR PREPARING DATA: {e}")
+            import traceback
+            traceback.print_exc()
+            print("=" * 70 + "\n")
+            return False, f"Error: {str(e)}"
+
+    # Connect to the MainApplicationFrame's save_requested signal
+    # This is emitted when the form is submitted with COMPLETE package (form + editor data)
+    editor.save_requested.connect(on_save_callback)
+    print("✅ Save callback connected to save_requested signal")
+
+    return editor
