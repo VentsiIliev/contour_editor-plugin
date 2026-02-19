@@ -3,14 +3,20 @@ Settings dialog for customizing all constants from constants.py
 Opens with Ctrl+S shortcut
 Saves to JSON file instead of modifying constants.py
 """
+import qtawesome as qta
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QTabWidget,
                              QLabel, QCheckBox,
                              QPushButton, QWidget, QGridLayout, QGroupBox,
-                             QColorDialog, QScrollArea, QComboBox, QSpinBox, QDoubleSpinBox)
-from ...persistence.providers.widget_provider import WidgetProvider
-from PyQt6.QtCore import Qt
+                             QColorDialog, QScrollArea, QComboBox, QSizeGrip)
+from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont, QColor
 from ...persistence.config.constants_manager import ConstantsManager
+
+from .styles import (
+    PRIMARY, BORDER, ICON_COLOR, BG_COLOR,
+    DIALOG_BUTTON_STYLE, TAB_WIDGET_STYLE
+)
+from .touch_widgets import TouchSpinBox
 
 
 class ColorButton(QPushButton):
@@ -19,7 +25,8 @@ class ColorButton(QPushButton):
     def __init__(self, color, parent=None):
         super().__init__(parent)
         self.color = color
-        self.setFixedSize(60, 30)
+        self.setFixedSize(100, 36)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.update_color(color)
         self.clicked.connect(self.choose_color)
 
@@ -29,11 +36,11 @@ class ColorButton(QPushButton):
         self.setStyleSheet(f"""
             QPushButton {{
                 background-color: rgba({color.red()}, {color.green()}, {color.blue()}, {color.alpha()});
-                border: 2px solid #333;
-                border-radius: 3px;
+                border: 2px solid {BORDER};
+                border-radius: 8px;
             }}
             QPushButton:hover {{
-                border: 2px solid #666;
+                border: 2px solid {PRIMARY};
             }}
         """)
 
@@ -54,58 +61,27 @@ class ConstantsSettingsDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Contour Editor Settings (Ctrl+S)")
+        self.setWindowTitle("Contour Editor Settings")
         self.setModal(False)
-        self.setMinimumSize(700, 600)
+        self.setMinimumSize(800, 700)
 
-        # Window flags
-        # self.setWindowFlags(
-        #     Qt.WindowType.Dialog |
-        #     Qt.WindowType.WindowTitleHint |
-        #     Qt.WindowType.WindowCloseButtonHint
-        # )
+        self.setStyleSheet(f"""
+            QDialog {{
+                background-color: {BG_COLOR};
+            }}
+        """)
+
         self.setWindowFlags(Qt.WindowType.Window)
 
-        # Dictionary to store all input widgets
         self.inputs = {}
+        self._float_inputs = set()   # tracks which const_names are float fields
 
-        # Main layout
         main_layout = QVBoxLayout(self)
-        main_layout.setSpacing(10)
-        main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(24, 24, 24, 24)
 
-        # Create tab widget
         self.tabs = QTabWidget(self)
-        # Ensure tabs, comboboxes and lists use a light background/text so they aren't black
-        self.tabs.setStyleSheet("""
-                QTabBar::tab {
-                    background: #f5f5f5;
-                    color: #000000;
-                    padding: 8px;
-                    border: 1px solid #cccccc;
-                    border-bottom: none;
-                    border-top-left-radius: 4px;
-                    border-top-right-radius: 4px;
-                }
-                QTabWidget::pane {
-                    border: 1px solid #cccccc;
-                    background: #ffffff;
-                }
-                QComboBox {
-                    background-color: #ffffff;
-                    color: #000000;
-                    border: 1px solid #aaaaaa;
-                    padding: 4px;
-                }
-                QComboBox QAbstractItemView {
-                    background: #ffffff;
-                    color: #000000;
-                    selection-background-color: #e0e0e0;
-                }
-                QScrollArea, QWidget {
-                    background: transparent;
-                }
-                """)
+        self.tabs.setStyleSheet(TAB_WIDGET_STYLE)
         main_layout.addWidget(self.tabs)
 
         # Create tabs
@@ -118,73 +94,47 @@ class ConstantsSettingsDialog(QDialog):
         self._create_overlays_tab()
         self._create_measurement_timing_tab()
 
-        # Buttons
         button_layout = QHBoxLayout()
-        button_layout.setSpacing(10)
+        button_layout.setSpacing(12)
 
-        # Reset to defaults button (left side)
-        self.reset_button = QPushButton("Reset to Defaults", self)
+        self.reset_button = QPushButton(self)
+        self.reset_button.setIcon(qta.icon("fa5s.undo-alt", color=ICON_COLOR))
+        self.reset_button.setIconSize(QSize(16, 16))
+        self.reset_button.setText(" Reset to Defaults")
         self.reset_button.setFont(QFont("Arial", 11))
-        self.reset_button.setMinimumHeight(35)
-        self.reset_button.setStyleSheet("""
-            QPushButton {
-                background-color: #FF9800;
-                color: white;
-                border-radius: 4px;
-                padding: 5px 20px;
-            }
-            QPushButton:hover {
-                background-color: #FFB74D;
-            }
-        """)
+        self.reset_button.setMinimumHeight(52)
+        self.reset_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.reset_button.setStyleSheet(DIALOG_BUTTON_STYLE)
         self.reset_button.clicked.connect(self._on_reset_clicked)
 
-        self.apply_button = QPushButton("Apply", self)
+        self.apply_button = QPushButton(self)
+        self.apply_button.setIcon(qta.icon("fa5s.check", color=ICON_COLOR))
+        self.apply_button.setIconSize(QSize(16, 16))
+        self.apply_button.setText(" Apply")
         self.apply_button.setFont(QFont("Arial", 11))
-        self.apply_button.setMinimumHeight(35)
-        self.apply_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                border-radius: 4px;
-                padding: 5px 20px;
-            }
-            QPushButton:hover {
-                background-color: #5CBF60;
-            }
-        """)
+        self.apply_button.setMinimumHeight(52)
+        self.apply_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.apply_button.setStyleSheet(DIALOG_BUTTON_STYLE)
         self.apply_button.clicked.connect(self._on_apply_clicked)
 
-        self.ok_button = QPushButton("OK", self)
+        self.ok_button = QPushButton(self)
+        self.ok_button.setIcon(qta.icon("fa5s.check-circle", color=ICON_COLOR))
+        self.ok_button.setIconSize(QSize(16, 16))
+        self.ok_button.setText(" OK")
         self.ok_button.setFont(QFont("Arial", 11))
-        self.ok_button.setMinimumHeight(35)
-        self.ok_button.setStyleSheet("""
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                border-radius: 4px;
-                padding: 5px 20px;
-            }
-            QPushButton:hover {
-                background-color: #42A5F5;
-            }
-        """)
+        self.ok_button.setMinimumHeight(52)
+        self.ok_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.ok_button.setStyleSheet(DIALOG_BUTTON_STYLE)
         self.ok_button.clicked.connect(self._on_ok_clicked)
 
-        self.cancel_button = QPushButton("Cancel", self)
+        self.cancel_button = QPushButton(self)
+        self.cancel_button.setIcon(qta.icon("fa5s.times", color=ICON_COLOR))
+        self.cancel_button.setIconSize(QSize(16, 16))
+        self.cancel_button.setText(" Cancel")
         self.cancel_button.setFont(QFont("Arial", 11))
-        self.cancel_button.setMinimumHeight(35)
-        self.cancel_button.setStyleSheet("""
-            QPushButton {
-                background-color: #757575;
-                color: white;
-                border-radius: 4px;
-                padding: 5px 20px;
-            }
-            QPushButton:hover {
-                background-color: #9E9E9E;
-            }
-        """)
+        self.cancel_button.setMinimumHeight(52)
+        self.cancel_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.cancel_button.setStyleSheet(DIALOG_BUTTON_STYLE)
         self.cancel_button.clicked.connect(self.reject)
 
         button_layout.addWidget(self.reset_button)
@@ -194,6 +144,46 @@ class ConstantsSettingsDialog(QDialog):
         button_layout.addWidget(self.cancel_button)
 
         main_layout.addLayout(button_layout)
+
+        # Add custom resize handle at a bottom right corner with qtawesome icon
+        self.resize_grip = QSizeGrip(self)
+        self.resize_grip.setFixedSize(32, 32)
+        self.resize_grip.setStyleSheet(f"""
+            QSizeGrip {{
+                background-color: transparent;
+                border: none;
+            }}
+            QSizeGrip:hover {{
+                background-color: rgba(122,90,248,0.1);
+                border-radius: 4px;
+            }}
+        """)
+
+        # Add qtawesome icon on top of the resize grip
+        self.resize_icon = QLabel(self.resize_grip)
+        self.resize_icon.setPixmap(
+            qta.icon("fa5s.grip-lines", color=PRIMARY).pixmap(QSize(20, 20))
+        )
+        self.resize_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.resize_icon.setGeometry(0, 0, 32, 32)
+        self.resize_icon.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)  # Let clicks pass through
+
+        # Position resize grip at bottom right corner
+        self.resize_grip.raise_()  # Bring to front
+
+        # Update resize grip position when dialog is resized
+        def update_grip_position():
+            self.resize_grip.move(
+                self.width() - self.resize_grip.width(),
+                self.height() - self.resize_grip.height()
+            )
+
+        self.resizeEvent = lambda event: (
+            QDialog.resizeEvent(self, event),
+            update_grip_position()
+        )[1]
+
+        update_grip_position()
 
         # Load current values
         self.load_current_values()
@@ -279,7 +269,7 @@ class ConstantsSettingsDialog(QDialog):
         # Line properties group
         lines_group = QGroupBox("Line Properties")
         lines_layout = QGridLayout()
-        lines_layout.setSpacing(10)
+        lines_layout.setSpacing(16)
 
         row = 0
         self._add_spinbox(lines_layout, row, "AXIS_LINE_THICKNESS", "Axis Line Thickness", 1, 20, False)
@@ -294,7 +284,7 @@ class ConstantsSettingsDialog(QDialog):
         # Label properties group
         labels_group = QGroupBox("Label Properties")
         labels_layout = QGridLayout()
-        labels_layout.setSpacing(10)
+        labels_layout.setSpacing(16)
 
         row = 0
         self._add_spinbox(labels_layout, row, "AXIS_LABEL_FONT_SIZE", "Font Size", 6, 24, False)
@@ -316,7 +306,7 @@ class ConstantsSettingsDialog(QDialog):
 
         group = QGroupBox("Segment Length Measurement")
         group_layout = QGridLayout()
-        group_layout.setSpacing(10)
+        group_layout.setSpacing(16)
 
         row = 0
         self._add_color(group_layout, row, "SEGMENT_LENGTH_COLOR", "Line Color")
@@ -341,7 +331,7 @@ class ConstantsSettingsDialog(QDialog):
 
         group = QGroupBox("Highlighted Line Segment")
         group_layout = QGridLayout()
-        group_layout.setSpacing(10)
+        group_layout.setSpacing(16)
 
         row = 0
         self._add_color(group_layout, row, "HIGHLIGHTED_LINE_COLOR", "Line Color")
@@ -385,7 +375,7 @@ class ConstantsSettingsDialog(QDialog):
         # Properties group
         props_group = QGroupBox("Properties")
         props_layout = QGridLayout()
-        props_layout.setSpacing(10)
+        props_layout.setSpacing(16)
 
         row = 0
         self._add_spinbox(props_layout, row, "CROSSHAIR_LINE_THICKNESS", "Line Thickness", 1, 10, False)
@@ -409,7 +399,7 @@ class ConstantsSettingsDialog(QDialog):
 
         group = QGroupBox("Point Rendering")
         group_layout = QGridLayout()
-        group_layout.setSpacing(10)
+        group_layout.setSpacing(16)
 
         row = 0
         self._add_color(group_layout, row, "POINT_HANDLE_COLOR", "Handle Color")
@@ -418,7 +408,10 @@ class ConstantsSettingsDialog(QDialog):
         row += 1
         self._add_spinbox(group_layout, row, "POINT_HANDLE_RADIUS", "Handle Radius", 2, 20, False)
         row += 1
-        self._add_spinbox(group_layout, row, "POINT_MIN_DISPLAY_SCALE", "Min Display Scale", 0.1, 10.0, True)
+        self._add_spinbox(
+            group_layout, row, "POINT_MIN_DISPLAY_SCALE", "Min Display Scale",
+            0.1, 10.0, True, step_options=[0.001, 0.01, 0.1, 1]
+        )
 
         group.setLayout(group_layout)
         layout.addWidget(group)
@@ -431,7 +424,7 @@ class ConstantsSettingsDialog(QDialog):
         # Button sizes group
         sizes_group = QGroupBox("Button Sizes")
         sizes_layout = QGridLayout()
-        sizes_layout.setSpacing(10)
+        sizes_layout.setSpacing(16)
 
         row = 0
         self._add_spinbox(sizes_layout, row, "OVERLAY_BUTTON_SIZE", "Button Size", 20, 100, False)
@@ -483,7 +476,7 @@ class ConstantsSettingsDialog(QDialog):
         # Measurement group
         measurement_group = QGroupBox("Measurement & Conversion")
         measurement_layout = QGridLayout()
-        measurement_layout.setSpacing(10)
+        measurement_layout.setSpacing(16)
 
         row = 0
         self._add_spinbox(measurement_layout, row, "PIXELS_PER_MM", "Pixels per MM", 0.1, 10.0, True)
@@ -494,7 +487,7 @@ class ConstantsSettingsDialog(QDialog):
         # Drag & Selection group
         drag_group = QGroupBox("Drag & Selection")
         drag_layout = QGridLayout()
-        drag_layout.setSpacing(10)
+        drag_layout.setSpacing(16)
 
         row = 0
         self._add_spinbox(drag_layout, row, "DRAG_THRESHOLD_PX", "Drag Threshold (px)", 1, 50, False)
@@ -509,7 +502,7 @@ class ConstantsSettingsDialog(QDialog):
         # Timing group
         timing_group = QGroupBox("Timing")
         timing_layout = QGridLayout()
-        timing_layout.setSpacing(10)
+        timing_layout.setSpacing(16)
 
         row = 0
         self._add_spinbox(timing_layout, row, "DRAG_UPDATE_INTERVAL_MS", "Drag Update Interval (ms)", 8, 100, False)
@@ -522,6 +515,10 @@ class ConstantsSettingsDialog(QDialog):
         layout.addWidget(timing_group)
 
         layout.addStretch()
+
+    # ------------------------------------------------------------------
+    # Widget factory helpers
+    # ------------------------------------------------------------------
 
     def _add_checkbox(self, layout, row, const_name, label):
         """Add a checkbox for a boolean constant"""
@@ -542,24 +539,34 @@ class ConstantsSettingsDialog(QDialog):
 
         self.inputs[const_name] = color_button
 
-    def _add_spinbox(self, layout, row, const_name, label, min_val, max_val, is_float):
-        """Add a spinbox for numeric constants"""
+    def _add_spinbox(self, layout, row, const_name, label,
+                     min_val, max_val, is_float, step_options=None):
+        """Add a touch spinbox for numeric constants.
+
+        Integer fields get a fixed step of 1 with no step pills.
+        Float fields get step=0.1 with decimals=3.
+        Only fields that explicitly pass step_options get the pill row.
+        """
         label_widget = QLabel(label + ":", self)
         label_widget.setFont(QFont("Arial", 10))
+        label_widget.setAlignment(
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft
+        )
 
         if is_float:
-            spinbox = WidgetProvider.get().create_double_spinbox(self)
-            spinbox.setDecimals(3)
-            spinbox.setSingleStep(0.1)
+            spinbox = TouchSpinBox(
+                min_val=min_val, max_val=max_val,
+                step=0.1, decimals=3,
+                step_options=step_options,
+            )
+            self._float_inputs.add(const_name)
         else:
-            spinbox = WidgetProvider.get().create_spinbox(self)
+            spinbox = TouchSpinBox(
+                min_val=min_val, max_val=max_val,
+                step=1, decimals=0,
+            )
 
-        spinbox.setMinimum(min_val)
-        spinbox.setMaximum(max_val)
-        spinbox.setFont(QFont("Arial", 10))
-        spinbox.setMinimumWidth(100)
-
-        layout.addWidget(label_widget, row, 0)
+        layout.addWidget(label_widget, row, 0, Qt.AlignmentFlag.AlignTop)
         layout.addWidget(spinbox, row, 1)
 
         self.inputs[const_name] = spinbox
@@ -579,10 +586,13 @@ class ConstantsSettingsDialog(QDialog):
 
         self.inputs[const_name] = combobox
 
+    # ------------------------------------------------------------------
+    # Data access
+    # ------------------------------------------------------------------
+
     def load_current_values(self):
         """Load current values from constants module (with JSON overrides if they exist)"""
         try:
-            # Get all current constant values (already has JSON overrides applied)
             current_values = ConstantsManager.get_all_constants()
 
             for const_name, widget in self.inputs.items():
@@ -593,10 +603,12 @@ class ConstantsSettingsDialog(QDialog):
                         widget.setChecked(value)
                     elif isinstance(widget, ColorButton):
                         widget.update_color(value)
-                    elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
-                        widget.setValue(value)
+                    elif isinstance(widget, TouchSpinBox):
+                        try:
+                            widget.setValue(float(value))
+                        except (ValueError, TypeError):
+                            pass
                     elif isinstance(widget, QComboBox):
-                        # Set combobox to the current value
                         index = widget.findText(value)
                         if index >= 0:
                             widget.setCurrentIndex(index)
@@ -614,8 +626,12 @@ class ConstantsSettingsDialog(QDialog):
                 values[const_name] = widget.isChecked()
             elif isinstance(widget, ColorButton):
                 values[const_name] = widget.get_color()
-            elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
-                values[const_name] = widget.value()
+            elif isinstance(widget, TouchSpinBox):
+                v = widget.value()
+                # Return int for integer fields, float for float fields
+                values[const_name] = (
+                    v if const_name in self._float_inputs else int(round(v))
+                )
             elif isinstance(widget, QComboBox):
                 values[const_name] = widget.currentText()
         return values
@@ -623,24 +639,18 @@ class ConstantsSettingsDialog(QDialog):
     def apply_changes(self):
         """Apply changes by saving to JSON and updating the constants module"""
         try:
-            # Get all values from widgets
             values = self.get_values()
 
-            # Save to JSON file
             if not ConstantsManager.save_settings(values):
                 print("Failed to save settings to JSON")
                 return False
 
-            # Apply the settings to the constants module
             ConstantsManager.apply_settings(values)
 
-            # Update parent editor if available
             if self.parent():
-                # Reload cached constants in the parent editor
                 if hasattr(self.parent(), '_reload_constants'):
                     self.parent()._reload_constants()
                 else:
-                    # Fallback to just updating the display
                     self.parent().update()
 
             print("Settings applied successfully!")
@@ -655,16 +665,12 @@ class ConstantsSettingsDialog(QDialog):
     def reset_to_defaults(self):
         """Reset all settings to default values"""
         if ConstantsManager.reset_to_defaults():
-            # Reload the dialog with default values
             self.load_current_values()
 
-            # Update parent editor if available
             if self.parent():
-                # Reload cached constants in the parent editor
                 if hasattr(self.parent(), '_reload_constants'):
                     self.parent()._reload_constants()
                 else:
-                    # Fallback to just updating the display
                     self.parent().update()
 
             print("Settings reset to defaults")
@@ -672,17 +678,13 @@ class ConstantsSettingsDialog(QDialog):
         return False
 
     def _on_apply_clicked(self):
-        """Handle Apply button click"""
         self.apply_changes()
 
     def _on_ok_clicked(self):
-        """Handle OK button click"""
         if self.apply_changes():
             self.accept()
 
     def _on_reset_clicked(self):
-        """Handle Reset to Defaults button click"""
-        # Ask for confirmation
         from PyQt6.QtWidgets import QMessageBox
         reply = QMessageBox.question(
             self,

@@ -19,28 +19,67 @@ from contour_editor import (
     SettingsGroup,
     ISettingsProvider
 )
+from contour_editor.ui.new_widgets.SegmentSettingsWidget import configure_segment_settings
 class GenericSettingsProvider(ISettingsProvider):
-    """Simple settings provider for generic contour editing"""
+    """Comprehensive settings provider for generic contour editing"""
     def __init__(self):
         self._default_settings = {
-            "speed": "100",
-            "power": "50",
-            "passes": "1"
+            # Material Settings
+            "Material Type": "Type A",
+            "Pressure": "100",
+            "Temperature": "25.5",
+            # Machine Settings
+            "Speed": "50.0",
+            "Feed Rate": "10.0",
+            "Tool Diameter": "5.0",
+            # Advanced Settings
+            "Acceleration": "500.0",
+            "Deceleration": "450.0",
+            "Jerk": "1000.0",
+            "Corner Radius": "2.5",
+            # Quality Settings
+            "Resolution": "0.1",
+            "Tolerance": "0.05",
+            "Surface Finish": "3.2",
+            "Layer Height": "0.2",
+            # Safety Settings
+            "Max Force": "1000.0",
+            "Min Clearance": "5.0",
+            "Emergency Stop Distance": "10.0",
+            # Process Settings
+            "Dwell Time": "1.5",
+            "Retract Distance": "3.0",
+            "Prime Amount": "0.5",
+            "Flow Rate": "100.0",
         }
+
     def get_all_setting_keys(self):
         return list(self._default_settings.keys())
+
     def get_default_values(self):
         return self._default_settings.copy()
+
     def get_material_type_key(self):
-        return ""
+        return "Material Type"
+
     def get_available_material_types(self):
-        return []
+        return ["Type A", "Type B", "Type C"]
+
     def get_default_material_type(self):
-        return ""
+        return "Type A"
+
     def get_setting_label(self, key: str):
-        return key.replace('_', ' ').title()
+        return key
+
     def get_settings_tabs_config(self):
-        return [("Settings", list(self._default_settings.keys()))]
+        return [
+            ("Material Settings", ["Material Type", "Pressure", "Temperature"]),
+            ("Machine Settings", ["Speed", "Feed Rate", "Tool Diameter"]),
+            ("Advanced Settings", ["Acceleration", "Deceleration", "Jerk", "Corner Radius"]),
+            ("Quality Settings", ["Resolution", "Tolerance", "Surface Finish", "Layer Height"]),
+            ("Safety Settings", ["Max Force", "Min Clearance", "Emergency Stop Distance"]),
+            ("Process Settings", ["Dwell Time", "Retract Distance", "Prime Amount", "Flow Rate"]),
+        ]
 def main():
     print("=" * 60)
     print("LAUNCHING DOMAIN-AGNOSTIC CONTOUR EDITOR")
@@ -49,18 +88,55 @@ def main():
     print("Use this for generic contour editing tasks.")
     print("=" * 60 + "\n")
     app = QApplication(sys.argv)
-    # Configure settings
+
+    # Configure comprehensive settings with 6 groups and 21 parameters
     config = SettingsConfig(
         default_settings={
-            "speed": "100",
-            "power": "50",
-            "passes": "1"
+            # Material Settings
+            "Material Type": "Type A",
+            "Pressure": "100",
+            "Temperature": "25.5",
+            # Machine Settings
+            "Speed": "50.0",
+            "Feed Rate": "10.0",
+            "Tool Diameter": "5.0",
+            # Advanced Settings
+            "Acceleration": "500.0",
+            "Deceleration": "450.0",
+            "Jerk": "1000.0",
+            "Corner Radius": "2.5",
+            # Quality Settings
+            "Resolution": "0.1",
+            "Tolerance": "0.05",
+            "Surface Finish": "3.2",
+            "Layer Height": "0.2",
+            # Safety Settings
+            "Max Force": "1000.0",
+            "Min Clearance": "5.0",
+            "Emergency Stop Distance": "10.0",
+            # Process Settings
+            "Dwell Time": "1.5",
+            "Retract Distance": "3.0",
+            "Prime Amount": "0.5",
+            "Flow Rate": "100.0",
         },
         groups=[
-            SettingsGroup("Basic Settings", ["speed", "power", "passes"])
-        ]
+            SettingsGroup("Material Settings", ["Material Type", "Pressure", "Temperature"]),
+            SettingsGroup("Machine Settings", ["Speed", "Feed Rate", "Tool Diameter"]),
+            SettingsGroup("Advanced Settings", ["Acceleration", "Deceleration", "Jerk", "Corner Radius"]),
+            SettingsGroup("Quality Settings", ["Resolution", "Tolerance", "Surface Finish", "Layer Height"]),
+            SettingsGroup("Safety Settings", ["Max Force", "Min Clearance", "Emergency Stop Distance"]),
+            SettingsGroup("Process Settings", ["Dwell Time", "Retract Distance", "Prime Amount", "Flow Rate"]),
+        ],
+        combo_field_key="Material Type"
     )
+
+    # IMPORTANT: Configure segment settings BEFORE building the editor
+    print("⚙️  Configuring segment settings...")
+    configure_segment_settings(config)
+
     provider = GenericSettingsProvider()
+
     # Build PURE generic editor (no forms, no workpiece concepts)
     print("🔨 Building pure contour editor...")
     editor = (ContourEditorBuilder()
@@ -73,7 +149,15 @@ def main():
     print("   ✓ Domain-agnostic")
     print("   ✓ No workpiece concepts")
     print("   ✓ No forms")
-    print("   ✓ Pure contour editing\n")
+    print("   ✓ Pure contour editing")
+    print("   ✓ 6 settings tabs with 21 parameters configured\n")
+    print("💡 Settings tabs available:")
+    print("   - Material Settings (3 fields)")
+    print("   - Machine Settings (3 fields)")
+    print("   - Advanced Settings (4 fields)")
+    print("   - Quality Settings (4 fields)")
+    print("   - Safety Settings (3 fields)")
+    print("   - Process Settings (4 fields)\n")
     print("💡 For workpiece-specific features (forms, etc),")
     print("   use run_workpiece_editor.py instead.\n")
     sys.exit(app.exec())

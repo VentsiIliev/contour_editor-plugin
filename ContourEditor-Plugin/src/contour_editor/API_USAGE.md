@@ -119,7 +119,7 @@ provider = MySettingsProvider(config, ["Type A", "Type B", "Type C"])
 SettingsProviderRegistry.get_instance().set_provider(provider)
 
 # Apply configuration to UI
-from contour_editor.ui.widgets.SegmentSettingsWidget import configure_segment_settings
+from contour_editor.ui.new_widgets.SegmentSettingsWidget import configure_segment_settings
 configure_segment_settings(config)
 ```
 
@@ -243,7 +243,7 @@ class ContourEditorIntegration:
     
     def _configure_settings(self):
         """Configure segment settings"""
-        from contour_editor.ui.widgets.SegmentSettingsWidget import configure_segment_settings
+        from contour_editor.ui.new_widgets.SegmentSettingsWidget import configure_segment_settings
         
         config = SettingsConfig(
             default_settings={

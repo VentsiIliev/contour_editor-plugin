@@ -4,31 +4,41 @@ echo "🧪 ContourEditor Test Runner"
 echo "=============================="
 echo ""
 
+# Use venv python if available, otherwise fall back to system python
+if [ -f ".venv/bin/python3" ]; then
+    PYTHON=".venv/bin/python3"
+    echo "Using venv python: $PYTHON"
+else
+    PYTHON="python3"
+    echo "⚠️  Warning: venv not found, using system python"
+fi
+echo ""
+
 # Disable ROS pytest plugin to avoid collection errors
 PYTEST_DISABLE_ROS="-p no:launch_testing_ros_pytest_entrypoint"
 
 # Run all tests
 if [ "$1" == "all" ]; then
     echo "Running all tests..."
-    PYTHONPATH=src python3 -m pytest tests/ -v $PYTEST_DISABLE_ROS
+    PYTHONPATH=src $PYTHON -m pytest tests/ -v $PYTEST_DISABLE_ROS
 # Run unit tests only
 elif [ "$1" == "unit" ]; then
     echo "Running unit tests..."
-    PYTHONPATH=src python3 -m pytest tests/unit/ -v $PYTEST_DISABLE_ROS
+    PYTHONPATH=src $PYTHON -m pytest tests/unit/ -v $PYTEST_DISABLE_ROS
 # Run integration tests only
 elif [ "$1" == "integration" ]; then
     echo "Running integration tests..."
-    PYTHONPATH=src python3 -m pytest tests/integration/ -v $PYTEST_DISABLE_ROS
+    PYTHONPATH=src $PYTHON -m pytest tests/integration/ -v $PYTEST_DISABLE_ROS
 # Run with coverage
 elif [ "$1" == "coverage" ]; then
     echo "Running tests with coverage..."
-    PYTHONPATH=src python3 -m pytest tests/ -v --cov-report=html --cov-report=term $PYTEST_DISABLE_ROS
+    PYTHONPATH=src $PYTHON -m pytest tests/ -v --cov-report=html --cov-report=term $PYTEST_DISABLE_ROS
     echo ""
     echo "📊 Coverage report generated in htmlcov/index.html"
 # Run specific test file
 elif [ -n "$1" ]; then
     echo "Running test file: $1"
-    PYTHONPATH=src python3 -m pytest "$1" -v $PYTEST_DISABLE_ROS
+    PYTHONPATH=src $PYTHON -m pytest "$1" -v $PYTEST_DISABLE_ROS
 # Show help
 else
     echo "Usage:"

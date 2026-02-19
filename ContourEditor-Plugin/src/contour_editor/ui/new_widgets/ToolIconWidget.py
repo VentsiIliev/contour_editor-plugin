@@ -1,8 +1,10 @@
 import os
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QFont
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QFrame
+
+from .styles import PRIMARY, PRIMARY_DARK, BG_COLOR, GROUP_BG
 
 
 class ToolIconWidget(QFrame):
@@ -52,17 +54,15 @@ class ToolIconWidget(QFrame):
             self.name_label = QLabel(self.tool_name)
             self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.name_label.setWordWrap(True)
-            self.name_label.setStyleSheet("""
-                QLabel {
-                    color: #1D1B20;
-                    font-size: 12px;
-                    font-weight: 500;
+            self.name_label.setFont(QFont("Arial", 10, QFont.Weight.Medium))
+            self.name_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {PRIMARY_DARK};
                     background: transparent;
-                    font-family: 'Roboto', 'Segoe UI', sans-serif;
-                }
+                }}
             """)
             layout.addWidget(self.name_label)
-        
+
         # Always update styling and content
         self.update_styling()
 
@@ -70,23 +70,23 @@ class ToolIconWidget(QFrame):
         """Update styling based on active state without recreating layout"""
         # Apply active/inactive styling to icon container
         if self.is_active:
-            self.icon_container.setStyleSheet("""
-                QFrame#ToolIconContainer {
-                    background: #6750A4;
+            self.icon_container.setStyleSheet(f"""
+                QFrame#ToolIconContainer {{
+                    background: {PRIMARY};
                     border: none;
                     border-radius: 28px;
-                }
+                }}
             """)
         else:
-            self.icon_container.setStyleSheet("""
-                QFrame#ToolIconContainer {
-                    background: #F7F2FA;
+            self.icon_container.setStyleSheet(f"""
+                QFrame#ToolIconContainer {{
+                    background: {GROUP_BG};
                     border: none;
                     border-radius: 28px;
-                }
-                QFrame#ToolIconContainer:hover {
-                    background: #E8DEF8;
-                }
+                }}
+                QFrame#ToolIconContainer:hover {{
+                    background: rgba(122,90,248,0.15);
+                }}
             """)
 
         # Update icon/emoji and its styling
@@ -100,7 +100,7 @@ class ToolIconWidget(QFrame):
                 self.icon_label.setStyleSheet(f"""
                     QLabel {{
                         font-size: 24px;
-                        color: {'white' if self.is_active else '#1D1B20'};
+                        color: {'white' if self.is_active else PRIMARY_DARK};
                         background: transparent;
                     }}
                 """)
@@ -113,7 +113,7 @@ class ToolIconWidget(QFrame):
             self.icon_label.setStyleSheet(f"""
                 QLabel {{
                     font-size: 24px;
-                    color: {'white' if self.is_active else '#1D1B20'};
+                    color: {'white' if self.is_active else PRIMARY_DARK};
                     background: transparent;
                 }}
             """)
@@ -133,6 +133,7 @@ class ToolIconWidget(QFrame):
         """Toggle active state"""
         self.is_active = not self.is_active
         self.update_styling()  # Update styling without recreating layout
+
 
 if __name__ == "__main__":
     import sys

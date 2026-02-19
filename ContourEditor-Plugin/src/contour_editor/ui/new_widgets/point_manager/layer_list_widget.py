@@ -1,9 +1,10 @@
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtWidgets import QListWidget, QListWidgetItem
 
-from contour_editor.ui.widgets.LayerButtonsWidget import LayerButtonsWidget
+from contour_editor.ui.new_widgets.LayerButtonsWidget import LayerButtonsWidget
 from .models import ListItemData
 from .list_item_widgets import ExpandableLayerWidget
+from ..styles import PRIMARY, PRIMARY_DARK, BORDER
 
 
 class LayerListWidget(QListWidget):
@@ -16,7 +17,33 @@ class LayerListWidget(QListWidget):
         self.expanded_layers = expanded_layers
         self.layer_items = {}
 
-        self.setAlternatingRowColors(True)
+        # Apply modern styling matching other new_widgets
+        self.setStyleSheet(f"""
+            QListWidget {{
+                outline: none;
+                border: 1px solid {BORDER};
+                background-color: white;
+                border-radius: 8px;
+                font-family: Arial;
+                font-size: 11pt;
+            }}
+            QListWidget::item {{
+                border: none;
+                padding: 12px 4px;
+                margin: 6px 2px;
+                border-radius: 6px;
+            }}
+            QListWidget::item:selected {{
+                background-color: rgba(122,90,248,0.15);
+                border: 1px solid {PRIMARY};
+                color: {PRIMARY_DARK};
+            }}
+            QListWidget::item:hover {{
+                background-color: rgba(122,90,248,0.05);
+            }}
+        """)
+
+        self.setAlternatingRowColors(False)  # Disable default alternating colors
         self.itemClicked.connect(self._on_item_clicked)
 
     def initialize_layers(self, contour_editor):
@@ -30,7 +57,7 @@ class LayerListWidget(QListWidget):
     def _create_layer_item(self, name, contour_editor):
         """Create a layer item with proper configuration"""
         item = QListWidgetItem()
-        item.setSizeHint(QSize(0, 80))
+        item.setSizeHint(QSize(0, 72))
 
         item_data = ListItemData('layer', layer_name=name)
         item.setData(Qt.ItemDataRole.UserRole, item_data)
@@ -72,4 +99,3 @@ class LayerListWidget(QListWidget):
     def get_layer_item(self, layer_name):
         """Get the QListWidgetItem for a layer"""
         return self.layer_items.get(layer_name)
-

@@ -159,16 +159,12 @@ def test_set_layer_visibility_invalid_layer(segment_service, mock_manager):
     # Should not modify any layers
     assert mock_manager.external_layer.visible != True
 def test_set_layer_locked(segment_service, mock_manager):
-    """Test set_layer_locked updates layer."""
-    mock_layer = Mock()
-    mock_layer.locked = False
-    mock_manager.getLayer = Mock(return_value=mock_layer)
+    """Test set_layer_locked delegates to manager."""
+    mock_manager.set_layer_locked = Mock()
     segment_service.set_layer_locked("Contour", True)
-    mock_manager.getLayer.assert_called_once_with("Contour")
-    assert mock_layer.locked is True
+    mock_manager.set_layer_locked.assert_called_once_with("Contour", True)
 def test_set_layer_locked_invalid_layer(segment_service, mock_manager):
-    """Test set_layer_locked with invalid layer."""
-    mock_manager.getLayer = Mock(return_value=None)
-    # Should not crash
+    """Test set_layer_locked with invalid layer does not crash."""
+    mock_manager.set_layer_locked = Mock()
     segment_service.set_layer_locked("InvalidLayer", True)
-    mock_manager.getLayer.assert_called_once_with("InvalidLayer")
+    mock_manager.set_layer_locked.assert_called_once_with("InvalidLayer", True)

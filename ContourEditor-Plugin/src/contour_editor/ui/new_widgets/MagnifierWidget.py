@@ -9,6 +9,7 @@ from PyQt6.QtGui import QPainter, QPen, QColor, QBrush
 from ...persistence.config.constants import LAYER_COLORS
 from ...rendering.renderer import draw_ruler, draw_pickup_point
 from PyQt6.QtGui import QPainterPath
+from .styles import PRIMARY, BORDER
 
 
 class MagnifierWidget(QWidget):
@@ -200,8 +201,10 @@ class MagnifierWidget(QWidget):
             painter.setBrush(QBrush(QColor(40, 40, 40, 230)))
             painter.drawRoundedRect(self.rect(), 10, 10)
 
-            # Draw border
-            painter.setPen(QPen(QColor(103, 80, 164), 3))
+            # Draw border using PRIMARY color from styles
+            border_color = QColor(PRIMARY)
+            border_color.setAlpha(255)
+            painter.setPen(QPen(border_color, 3))
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRoundedRect(self.rect().adjusted(2, 2, -2, -2), 8, 8)
 

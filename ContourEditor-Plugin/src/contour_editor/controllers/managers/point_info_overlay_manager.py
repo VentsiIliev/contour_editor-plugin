@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QDialog
 import math
 from ...persistence.config import constants
 from ...persistence.utils import coordinate_utils
-from ...ui.widgets.PointInfoOverlay import PointInfoOverlay
-from ...ui.widgets.SetLengthAndAngleDialog import SetLengthAndAngleDialog
+from ...ui.new_widgets.PointInfoOverlay import PointInfoOverlay
+from ...ui.new_widgets.SetLengthAndAngleDialog import SetLengthAndAngleDialog
 
 
 def setup_point_info_overlay(editor):

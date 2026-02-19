@@ -1,8 +1,10 @@
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtWidgets import QListWidget, QListWidgetItem
 
+from ...new_widgets.SegmentButtonsAndComboWidget import SegmentButtonsAndComboWidget
 from .models import ListItemData
-from .list_item_widgets import ExpandableSegmentWidget, IndentedWidget, SegmentButtonsAndComboWidget
+from .list_item_widgets import ExpandableSegmentWidget, IndentedWidget
+from ..styles import PRIMARY, PRIMARY_DARK, BORDER
 
 
 class SegmentListWidget(QListWidget):
@@ -16,7 +18,33 @@ class SegmentListWidget(QListWidget):
         self.expanded_segments = expanded_segments
         self.segment_items = {}
 
-        self.setAlternatingRowColors(True)
+        # Apply modern styling matching other new_widgets
+        self.setStyleSheet(f"""
+            QListWidget {{
+                outline: none;
+                border: 1px solid {BORDER};
+                background-color: white;
+                border-radius: 8px;
+                font-family: Arial;
+                font-size: 11pt;
+            }}
+            QListWidget::item {{
+                border: none;
+                padding: 8px 4px;
+                margin: 4px 2px;
+                border-radius: 6px;
+            }}
+            QListWidget::item:selected {{
+                background-color: rgba(122,90,248,0.15);
+                border: 1px solid {PRIMARY};
+                color: {PRIMARY_DARK};
+            }}
+            QListWidget::item:hover {{
+                background-color: rgba(122,90,248,0.05);
+            }}
+        """)
+
+        self.setAlternatingRowColors(False)  # Modern design uses hover/selection instead
         self.itemClicked.connect(self._on_item_clicked)
 
     def add_segment(self, seg_index, segment, layer_name, contour_editor):

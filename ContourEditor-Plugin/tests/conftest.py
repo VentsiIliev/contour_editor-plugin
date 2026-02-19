@@ -6,6 +6,14 @@ from pathlib import Path
 from unittest.mock import Mock, MagicMock
 import pytest
 from PyQt6.QtCore import QPointF
+
+# Mock qtawesome if not installed so unit/integration tests that don't
+# need UI widgets can still run (qtawesome is pulled in transitively via
+# contour_editor/__init__.py -> core/main_frame.py -> ui/__init__.py).
+try:
+    import qtawesome  # noqa: F401
+except ImportError:
+    sys.modules['qtawesome'] = MagicMock()
 # Add src to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))

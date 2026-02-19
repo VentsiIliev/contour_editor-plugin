@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QDialog, QVBoxLayout, QMessageBox
 
-from contour_editor.ui.widgets.SegmentSettingsWidget import SegmentSettingsWidget, get_default_settings, get_combo_field_key
+from contour_editor.ui.new_widgets.SegmentSettingsWidget import SegmentSettingsWidget, get_default_settings, get_combo_field_key
 
 
 class SettingsDialogHandler:

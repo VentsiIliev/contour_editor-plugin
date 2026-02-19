@@ -9,7 +9,9 @@ from .persistence.data.settings_provider_registry import SettingsProviderRegistr
 from .persistence.providers.form_provider import AdditionalFormProvider
 from .persistence.providers.widget_provider import WidgetProvider
 from .models.settings_config import SettingsConfig
-from .ui.widgets.SegmentSettingsWidget import configure_segment_settings
+from .ui.new_widgets.SegmentSettingsWidget import configure_segment_settings
+
+
 class ContourEditorBuilder:
     """
     Builder for configuring and creating a ContourEditor instance.
@@ -21,6 +23,7 @@ class ContourEditorBuilder:
                   .on_save(my_save_handler)
                   .build())
     """
+
     def __init__(self):
         self._parent = None
         self._segment_manager_class = None
@@ -33,35 +36,43 @@ class ContourEditorBuilder:
         self._execute_callback: Optional[Callable] = None
         self._update_camera_feed_callback: Optional[Callable] = None
         self._editor: Optional[MainApplicationFrame] = None
+
     def with_parent(self, parent):
         """Set parent widget"""
         self._parent = parent
         return self
+
     def with_segment_manager(self, manager_class):
         """Configure segment manager backend (REQUIRED)"""
         self._segment_manager_class = manager_class
         return self
+
     def with_settings(self, config: SettingsConfig, provider=None):
         """Configure segment settings (optional)"""
         self._settings_config = config
         self._settings_provider = provider
         return self
+
     def with_form(self, form_factory):
         """Configure additional data form (optional)"""
         self._form_factory = form_factory
         return self
+
     def with_widgets(self, widget_factory):
         """Configure custom widgets (optional)"""
         self._widget_factory = widget_factory
         return self
+
     def on_save(self, callback: Callable[[dict], None]):
         """Set callback for save events"""
         self._save_callback = callback
         return self
+
     def on_capture(self, callback: Callable[[], None]):
         """Set callback for capture events"""
         self._capture_callback = callback
         return self
+
     def on_execute(self, callback: Callable[[Any], None]):
         """Set callback for execute events"""
         self._execute_callback = callback
@@ -99,16 +110,21 @@ class ContourEditorBuilder:
         self._connect_signals()
         print("✅ Contour Editor built successfully")
         return self._editor
+
     def _configure_segment_manager(self):
         """Configure segment manager backend"""
         manager_class = self._segment_manager_class
+
         class Adapter:
             def __init__(self):
                 self._manager = manager_class()
+
             def __getattr__(self, name):
                 return getattr(self._manager, name)
+
         SegmentManagerProvider.get_instance().set_manager_class(Adapter)
         print("✅ Segment manager configured")
+
     def _configure_settings(self):
         """Configure settings provider and UI"""
         if self._settings_provider:
@@ -117,16 +133,19 @@ class ContourEditorBuilder:
         if self._settings_config:
             configure_segment_settings(self._settings_config)
             print("✅ Settings UI configured")
+
     def _configure_widgets(self):
         """Configure custom widget factory"""
         if self._widget_factory:
             WidgetProvider.get().set_custom_factory(self._widget_factory)
             print("✅ Custom widgets configured")
+
     def _configure_form(self):
         """Configure additional data form factory"""
         if self._form_factory:
             AdditionalFormProvider.get().set_factory(self._form_factory)
             print("✅ Additional data form configured")
+
     def _connect_signals(self):
         """Connect user callbacks to editor signals"""
         if self._save_callback:

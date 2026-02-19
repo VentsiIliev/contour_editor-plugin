@@ -115,7 +115,7 @@ def configure_settings(config, provider=None):
         provider: Optional ISettingsProvider implementation
     """
     from contour_editor import SettingsProviderRegistry
-    from contour_editor.ui.widgets.SegmentSettingsWidget import configure_segment_settings
+    from contour_editor.ui.new_widgets.SegmentSettingsWidget import configure_segment_settings
 
     if provider:
         SettingsProviderRegistry.get_instance().set_provider(provider)

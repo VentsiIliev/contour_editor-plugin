@@ -1,4 +1,4 @@
-from ...ui.widgets.SegmentClickOverlay import SegmentClickOverlay
+from ...ui.new_widgets.SegmentClickOverlay import SegmentClickOverlay
 
 
 def setup_segment_click_overlay(editor):

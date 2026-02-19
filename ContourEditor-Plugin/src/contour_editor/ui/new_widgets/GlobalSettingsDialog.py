@@ -1,7 +1,15 @@
+import qtawesome as qta
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFont
 
-from .SegmentSettingsWidget import (
+from ..new_widgets.SegmentSettingsWidget import (
     SegmentSettingsWidget, update_default_settings, get_default_settings, get_combo_field_key
+)
+
+from .styles import (
+    PRIMARY_DARK, BORDER, ICON_COLOR, BG_COLOR,
+    DIALOG_BUTTON_STYLE
 )
 
 
@@ -9,19 +17,35 @@ class GlobalSettingsDialog(QDialog):
     def __init__(self, point_manager_widget, glue_type_names, parent=None):
         super().__init__(parent)
         self.point_manager_widget = point_manager_widget
-        self.contour_editor = point_manager_widget.contour_editor
         self.glue_type_names = glue_type_names
         self.setWindowTitle("Global Settings")
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(600)
         self.setMinimumHeight(700)
+
+        self.setStyleSheet(f"""
+            QDialog {{
+                background-color: {BG_COLOR};
+            }}
+        """)
 
         self.init_ui()
 
     def init_ui(self):
         layout = QVBoxLayout(self)
+        layout.setSpacing(20)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         title_label = QLabel("Global Settings - Apply to All Segments")
-        title_label.setStyleSheet("font-size: 16px; font-weight: bold; margin: 10px;")
+        title_label.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        title_label.setStyleSheet(f"""
+            QLabel {{
+                color: {PRIMARY_DARK};
+                padding: 10px;
+                background: white;
+                border-radius: 8px;
+                border: 1px solid {BORDER};
+            }}
+        """)
         layout.addWidget(title_label)
 
         default_settings = get_default_settings()
@@ -44,13 +68,29 @@ class GlobalSettingsDialog(QDialog):
         layout.addWidget(self.segment_settings_widget)
 
         button_layout = QHBoxLayout()
+        button_layout.setSpacing(12)
 
-        apply_button = QPushButton("Apply to All Segments")
+        apply_button = QPushButton(self)
+        apply_button.setIcon(qta.icon("fa5s.check-double", color=ICON_COLOR))
+        apply_button.setIconSize(QSize(16, 16))
+        apply_button.setText(" Apply to All Segments")
+        apply_button.setFont(QFont("Arial", 11))
+        apply_button.setMinimumHeight(42)
+        apply_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        apply_button.setStyleSheet(DIALOG_BUTTON_STYLE)
         apply_button.clicked.connect(self.apply_settings_to_all_segments)
 
-        cancel_button = QPushButton("Cancel")
+        cancel_button = QPushButton(self)
+        cancel_button.setIcon(qta.icon("fa5s.times", color=ICON_COLOR))
+        cancel_button.setIconSize(QSize(16, 16))
+        cancel_button.setText(" Cancel")
+        cancel_button.setFont(QFont("Arial", 11))
+        cancel_button.setMinimumHeight(42)
+        cancel_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        cancel_button.setStyleSheet(DIALOG_BUTTON_STYLE)
         cancel_button.clicked.connect(self.reject)
 
+        button_layout.addStretch()
         button_layout.addWidget(apply_button)
         button_layout.addWidget(cancel_button)
 

@@ -1,21 +1,14 @@
-import os
-import sys
+import qtawesome as qta
 from types import SimpleNamespace
 
-from PyQt6.QtCore import Qt, QSize, QTimer
-from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt, QSize, QTimer, QPoint
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QHBoxLayout,
-    QPushButton, QComboBox, QSizePolicy
-)
-from PyQt6.QtCore import Qt, QSize, QTimer, QPoint  # Add QPoint
-from ...persistence.providers.icon_provider import IconProvider
-from PyQt6.QtWidgets import (
-    QApplication, QWidget, QHBoxLayout,
-    QPushButton, QComboBox, QSizePolicy, QMenu, QWidgetAction  # Add QMenu, QWidgetAction
+    QPushButton, QSizePolicy, QMenu
 )
 
-# --- Resource Paths ---
+from .styles import PRIMARY, PRIMARY_DARK, BORDER, ICON_COLOR, NORMAL_STYLE, ACTIVE_STYLE
 
 
 class LayerSelectionPopup(QMenu):
@@ -26,27 +19,32 @@ class LayerSelectionPopup(QMenu):
         self.on_layer_change = on_layer_change
         self.current_layer = current_layer
 
-        self.setStyleSheet("""
-            QMenu {
+        # Modern purple theme styling
+        self.setStyleSheet(f"""
+            QMenu {{
                 background-color: white;
-                border: 2px solid #007acc;
+                border: 2px solid {PRIMARY};
                 border-radius: 8px;
-                padding: 5px;
-                font-size: 14px;
-            }
-            QMenu::item {
-                padding: 8px 20px;
+                padding: 8px;
+                font-size: 11pt;
+                font-family: Arial;
+            }}
+            QMenu::item {{
+                padding: 10px 24px;
                 margin: 2px;
-                border-radius: 4px;
-            }
-            QMenu::item:selected {
-                background-color: #e6f3ff;
-                color: #007acc;
-            }
-            QMenu::item:pressed {
-                background-color: #cce7ff;
-            }
+                border-radius: 6px;
+                color: {ICON_COLOR};
+            }}
+            QMenu::item:selected {{
+                background-color: rgba(122,90,248,0.15);
+                color: {PRIMARY_DARK};
+            }}
+            QMenu::item:pressed {{
+                background-color: rgba(122,90,248,0.25);
+            }}
         """)
+
+        # ...existing code...
 
         # Add layer options
         layers = ["Main", "Contour", "Fill"]
@@ -77,6 +75,25 @@ class PressAndHoldButton(QPushButton):
         # Callbacks
         self.on_click_callback = None
         self.on_long_press_callback = None
+
+        # Apply modern styling
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background: white;
+                border: 1px solid {BORDER};
+                border-radius: 8px;
+                color: {PRIMARY};
+            }}
+            QPushButton:hover {{
+                border: 1px solid {PRIMARY};
+                background-color: rgba(122,90,248,0.05);
+            }}
+            QPushButton:pressed {{
+                background-color: rgba(122,90,248,0.10);
+            }}
+        """)
 
     def set_click_callback(self, callback):
         """Set callback for normal click"""
@@ -111,7 +128,7 @@ class PressAndHoldButton(QPushButton):
 
 class SegmentButtonsAndComboWidget(QWidget):
     def __init__(self, seg_index, segment, layer_name,
-                 on_visibility, on_activate, on_delete, on_settings, on_layer_change,on_long_press):
+                 on_visibility, on_activate, on_delete, on_settings, on_layer_change, on_long_press):
         super().__init__()
 
         self.segment = segment
@@ -119,9 +136,6 @@ class SegmentButtonsAndComboWidget(QWidget):
         self.on_layer_change = on_layer_change
         self.seg_index = seg_index
         self.current_layer = layer_name
-
-        # Get IconProvider
-        icon_provider = IconProvider.get()
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -131,11 +145,10 @@ class SegmentButtonsAndComboWidget(QWidget):
         # Use custom press and hold button for index label
         self.index_label = PressAndHoldButton(f"S{seg_index}")
         self.index_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.index_label.setFixedHeight(50)
-        self.index_label.setFixedWidth(50)
+        self.index_label.setFixedHeight(48)
+        self.index_label.setFixedWidth(48)
         self.index_label.setToolTip(
             f"Segment {seg_index} - Click to activate, Hold for layer options")
-        self.index_label.setStyleSheet("text-align: center;")
 
         # Set callbacks for press and hold
         self.index_label.set_click_callback(on_activate)
@@ -143,25 +156,18 @@ class SegmentButtonsAndComboWidget(QWidget):
 
         layout.addWidget(self.index_label)
 
-        # Buttons
-        self.visibility_btn = self._create_visibility_button(icon_provider)
+        # Buttons with qtawesome icons
+        self.visibility_btn = self._create_visibility_button()
         layout.addWidget(self.visibility_btn)
 
-        # Active button (commented out but fixed)
-        # self.active_btn = self._create_icon_button(
-        #     icon_provider.get_icon('active' if getattr(segment, "is_active", False) else 'inactive'),
-        #     "Set as active segment",
-        #     on_activate
-        # )
-
         self.delete_btn = self._create_icon_button(
-            icon_provider.get_icon('BIN_ICON'), "Delete this segment", on_delete
+            "fa5s.trash", "Delete this segment", on_delete
         )
         layout.addWidget(self.delete_btn)
 
         # Settings button with gear icon
         self.settings_btn = self._create_icon_button(
-            icon_provider.get_icon('TOOLS'), "Segment settings", on_settings  # Using TOOLS icon as gear
+            "fa5s.cog", "Segment settings", on_settings
         )
         layout.addWidget(self.settings_btn)
 
@@ -191,37 +197,54 @@ class SegmentButtonsAndComboWidget(QWidget):
         """Update the current layer (call this from parent when layer changes)"""
         self.current_layer = new_layer
 
-    def _create_icon_button(self, icon, tooltip, callback):
+    def _create_icon_button(self, icon_name, tooltip, callback):
+        """Create a button with qtawesome icon and modern styling"""
         button = QPushButton()
-        button.setIcon(icon)
-        button.setIconSize(QSize(50, 50))
+        button.setIcon(qta.icon(icon_name, color=ICON_COLOR))
+        button.setIconSize(QSize(20, 20))
         button.setToolTip(tooltip)
-        button.setFixedSize(80, 80)
+        button.setFixedSize(48, 48)
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+        button.setStyleSheet(NORMAL_STYLE)
         button.clicked.connect(callback)
-        button.setStyleSheet("background-color: transparent; border: none;")
         return button
 
-    def _create_visibility_button(self, icon_provider):
+    def _create_visibility_button(self):
+        """Create visibility toggle button with modern styling"""
         button = QPushButton()
         button.setCheckable(True)
         is_visible = getattr(self.segment, "visible", True)
         button.setChecked(is_visible)
-        button.setIcon(icon_provider.get_icon('hide' if is_visible else 'show'))
-        button.setIconSize(QSize(50, 50))
+
+        # Use eye icons from qtawesome
+        icon_name = "fa5s.eye" if is_visible else "fa5s.eye-slash"
+        button.setIcon(qta.icon(icon_name, color=ICON_COLOR))
+        button.setIconSize(QSize(20, 20))
         button.setToolTip("Toggle segment visibility")
-        button.setFixedSize(80, 80)
-        button.clicked.connect(lambda: self._toggle_visibility(button, icon_provider))
-        button.setStyleSheet("background-color: transparent; border: none;")
+        button.setFixedSize(48, 48)
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+        button.setStyleSheet(NORMAL_STYLE)
+        button.clicked.connect(lambda: self._toggle_visibility(button))
         return button
 
-    def _toggle_visibility(self, button, icon_provider):
+    def _toggle_visibility(self, button):
+        """Toggle visibility icon and call callback"""
         is_visible = button.isChecked()
-        button.setIcon(icon_provider.get_icon('hide' if is_visible else 'show'))
+        icon_name = "fa5s.eye" if is_visible else "fa5s.eye-slash"
+        button.setIcon(qta.icon(icon_name, color=ICON_COLOR))
+
+        # Apply active style when hidden
+        if is_visible:
+            button.setStyleSheet(NORMAL_STYLE)
+        else:
+            button.setStyleSheet(ACTIVE_STYLE)
+
         self.on_visibility(button)
 
 
 # --- Testing ---
 if __name__ == "__main__":
+    import sys
     app = QApplication(sys.argv)
 
     segment = SimpleNamespace(visible=True, is_active=False)
@@ -248,8 +271,8 @@ if __name__ == "__main__":
         print("Layer changed to:", value)
 
 
-    def on_long_press(seg_index):
-        print(f"Long press detected on segment {seg_index}!")
+    def on_long_press():
+        print(f"Long press detected!")
 
 
 

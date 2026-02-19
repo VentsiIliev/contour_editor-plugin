@@ -4,20 +4,13 @@ offering options to add either a control point or an anchor point.
 Uses radial menu for selection.
 """
 
-from PyQt6.QtWidgets import QPushButton
-from PyQt6.QtCore import Qt, pyqtSignal, QPoint
-from PyQt6.QtGui import QFont, QPainter, QColor, QPen, QBrush, QIcon
-from ...tests.examples.radial_menu_demo import RadialMenu
+import qtawesome as qta
 import math
-import os
-from ...persistence.providers.icon_provider import IconProvider
-# GET RESOURCES DIRECTORY
-# This file is at src/contour_editor/ui/widgets/SegmentClickOverlay.py
-# Icons are at src/contour_editor/assets/icons
-# So go up 2 levels to contour_editor, then into assets/icons
-widget_dir = os.path.dirname(os.path.abspath(__file__))
-ui_dir = os.path.dirname(widget_dir)
-contour_editor_dir = os.path.dirname(ui_dir)
+from PyQt6.QtWidgets import QPushButton
+from PyQt6.QtCore import Qt, pyqtSignal, QPoint, QSize
+from PyQt6.QtGui import QPainter, QColor, QPen, QBrush
+from ...tests.examples.radial_menu_demo import RadialMenu
+from .styles import PRIMARY, PRIMARY_DARK, ICON_COLOR
 
 class SegmentClickOverlay(RadialMenu):
     """Radial menu overlay for choosing what to add to a segment"""
@@ -67,46 +60,45 @@ class SegmentClickOverlay(RadialMenu):
         self.control_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.control_btn.hide()
 
-        # Disconnect line button
-        # Add disconnect button at the end
+        # Disconnect line button with modern purple theme
         self.disconnect_btn = QPushButton(self)
-        # set icon
-        self.disconnect_btn.setIconSize(self.disconnect_btn.size())
-        self.disconnect_btn.setIcon(IconProvider.get().get_icon('BROKEN_CHAIN'))
-        self.disconnect_btn.setFont(QFont("Arial", 20))
+        self.disconnect_btn.setIcon(qta.icon("fa5s.unlink", color="white"))
+        self.disconnect_btn.setIconSize(QSize(24, 24))
         self.disconnect_btn.setFixedSize(50, 50)
-        self.disconnect_btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #6750A4;
-                        color: white;
-                        border-radius: 25px;
-                        border: 2px solid white;
-                    }
-                    QPushButton:hover {
-                        background-color: #6750A4;
-                    }
-                """)
+        self.disconnect_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {PRIMARY};
+                color: white;
+                border-radius: 25px;
+                border: 2px solid white;
+                font-family: Arial;
+            }}
+            QPushButton:hover {{
+                background-color: {PRIMARY_DARK};
+            }}
+        """)
         self.disconnect_btn.setToolTip("Disconnect Line")
         self.disconnect_btn.clicked.connect(self.disconnect_line_requested.emit)
         self.disconnect_btn.hide()
 
-        # Delete segment button
-        # Add delete button at the end
-        self.delete_btn = QPushButton("🗑️", self)
-        self.delete_btn.setFont(QFont("Arial", 20))
+        # Delete segment button with trash icon
+        self.delete_btn = QPushButton(self)
+        self.delete_btn.setIcon(qta.icon("fa5s.trash", color="white"))
+        self.delete_btn.setIconSize(QSize(24, 24))
         self.delete_btn.setFixedSize(50, 50)
         self.delete_btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #FF5252;
-                        color: white;
-                        border-radius: 25px;
-                        border: 2px solid white;
-                    }
-                    QPushButton:hover {
-                        background-color: #FF6666;
-                    }
-                """)
-        self.delete_btn.setToolTip("Delete Point")
+            QPushButton {
+                background-color: #FF5252;
+                color: white;
+                border-radius: 25px;
+                border: 2px solid white;
+                font-family: Arial;
+            }
+            QPushButton:hover {
+                background-color: #FF6666;
+            }
+        """)
+        self.delete_btn.setToolTip("Delete Segment")
         self.delete_btn.clicked.connect(self._on_delete_clicked)
         self.delete_btn.hide()
         # Anchor point button (filled circle)
@@ -122,21 +114,23 @@ class SegmentClickOverlay(RadialMenu):
         self.anchor_btn.hide()
 
         # Cancel button (centered, not in radial arrangement)
-        self.cancel_btn = QPushButton("❌", self)
-        self.cancel_btn.setFont(QFont("Arial", 20))
+        self.cancel_btn = QPushButton(self)
+        self.cancel_btn.setIcon(qta.icon("fa5s.times", color="white"))
+        self.cancel_btn.setIconSize(QSize(24, 24))
         self.cancel_btn.setFixedSize(50, 50)
-        self.cancel_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #666666;
+        self.cancel_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {ICON_COLOR};
                 color: white;
                 border-radius: 25px;
                 border: 2px solid white;
-            }
-            QPushButton:hover {
-                background-color: #888888;
-            }
+                font-family: Arial;
+            }}
+            QPushButton:hover {{
+                background-color: {PRIMARY_DARK};
+            }}
         """)
-        self.cancel_btn.setToolTip("Cancel")
+        self.cancel_btn.setToolTip("Cancel (ESC)")
         self.cancel_btn.clicked.connect(self._on_cancel_clicked)
         self.cancel_btn.hide()
 
@@ -175,9 +169,9 @@ class SegmentClickOverlay(RadialMenu):
             center_x = rect.center().x()
             center_y = rect.center().y()
 
-            # Background circle (50x50)
+            # Background circle (50x50) with purple theme
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QBrush(QColor("#6750A4")))
+            painter.setBrush(QBrush(QColor(PRIMARY)))
             painter.drawEllipse(center_x - 25, center_y - 25, 50, 50)
 
             # Hollow circle (white border, transparent inside)
@@ -191,9 +185,9 @@ class SegmentClickOverlay(RadialMenu):
             center_x = rect.center().x()
             center_y = rect.center().y()
 
-            # Background circle (50x50)
+            # Background circle (50x50) with purple theme
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QBrush(QColor("#6750A4")))
+            painter.setBrush(QBrush(QColor(PRIMARY)))
             painter.drawEllipse(center_x - 25, center_y - 25, 50, 50)
 
             # Filled circle
@@ -260,38 +254,3 @@ class SegmentClickOverlay(RadialMenu):
             btn.hide()
         self.cancel_btn.hide()
         super().hideEvent(event)
-
-if __name__ == "__main__":
-    import sys
-    from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
-
-    class TTestWindow(QWidget):
-        def __init__(self):
-            super().__init__()
-            self.setWindowTitle("SegmentClickOverlay Test")
-            self.resize(400, 400)
-
-            layout = QVBoxLayout(self)
-
-            self.test_button = QPushButton("Click Me", self)
-            self.test_button.clicked.connect(self.on_test_button_clicked)
-            layout.addWidget(self.test_button)
-
-            self.overlay = SegmentClickOverlay(self)
-            self.overlay.control_point_requested.connect(self.on_control_point_requested)
-            self.overlay.anchor_point_requested.connect(self.on_anchor_point_requested)
-
-        def on_test_button_clicked(self):
-            button_pos = self.test_button.mapToGlobal(self.test_button.rect().center())
-            self.overlay.show_at(button_pos)
-
-        def on_control_point_requested(self):
-            print("Control point requested")
-
-        def on_anchor_point_requested(self):
-            print("Anchor point requested")
-
-    app = QApplication(sys.argv)
-    window = TTestWindow()
-    window.show()
-    sys.exit(app.exec())

@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QWidget, QGridLayout
 from ..persistence.config import constants
 from ..persistence.config.constants import EDIT_MODE, DRAG_MODE
 from .editor_with_rulers import ContourEditorWithRulers
-from ..ui.widgets.BottomToolBar import BottomToolBar
+from ..ui.new_widgets.BottomToolBar import BottomToolBar
 
 
 class ContourEditorWithBottomToolBar(QWidget):

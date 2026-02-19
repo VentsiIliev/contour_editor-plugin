@@ -1,11 +1,11 @@
 from PyQt6.QtGui import QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from ...persistence.config import constants
 from ...persistence.config.constants_manager import ConstantsManager
-from ...ui.widgets.ConstantsSettingsDialog import ConstantsSettingsDialog
-from ...ui.widgets.GlobalSettingsDialog import GlobalSettingsDialog
+from ...ui.new_widgets.ConstantsSettingsDialog import ConstantsSettingsDialog
+from ...ui.new_widgets.GlobalSettingsDialog import GlobalSettingsDialog
 
 
 class SettingsManager:
@@ -95,23 +95,68 @@ class SettingsManager:
     
     def show_global_settings(self):
         """Show the global settings dialog (Ctrl+G)"""
-        # Fetch the latest glue types before showing the dialog
-        self._fetch_glue_types()
+        from ...persistence.data.settings_provider_registry import SettingsProviderRegistry
 
-        # Use the stored point_manager_widget reference
-        if self.point_manager_widget:
-            screen = QApplication.primaryScreen()
-            screen_geometry = screen.geometry()
-            screen_width = screen_geometry.width()
-            screen_height = screen_geometry.height()
-            dialog = GlobalSettingsDialog(self.point_manager_widget,self.glue_type_names, parent=self.editor)
-            dialog.setMinimumWidth(screen_width)
-            dialog.setMinimumHeight(int(screen_height / 2))
-            dialog.setMaximumHeight(int(screen_height / 2))
-            dialog.adjustSize()
-            dialog.show()
+        # Check settings provider is configured
+        registry = SettingsProviderRegistry.get_instance()
+        if not registry.has_provider():
+            provider = None
         else:
-            raise ValueError("[SettingsManager] point_manager_widget is not set - cannot open global settings dialog")
+            provider = registry.get_provider()
+        if not provider:
+            QMessageBox.information(
+                self.editor,
+                "Settings Not Available",
+                "Global settings are not available in standalone mode.\n\n"
+                "This feature requires connection to the application controller.\n"
+                "Please configure a SettingsProvider before creating the editor.\n\n"
+                "See API_USAGE.md for configuration examples.",
+                QMessageBox.StandardButton.Ok
+            )
+            return
+
+        # Get material types directly from the provider (authoritative source)
+        try:
+            material_types = provider.get_available_material_types()
+            if material_types:
+                self.glue_type_names = material_types
+        except Exception as e:
+            print(f"[SettingsManager] Warning: Could not fetch material types from provider: {e}")
+            # Fallback: try signal-based fetch
+            try:
+                self._fetch_glue_types()
+            except Exception as e2:
+                print(f"[SettingsManager] Warning: Could not fetch glue types via signal: {e2}")
+
+        if not self.glue_type_names:
+            QMessageBox.information(
+                self.editor,
+                "Settings Not Available",
+                "Global settings are not available: no material types could be loaded.\n\n"
+                "Please ensure the settings provider is properly configured.",
+                QMessageBox.StandardButton.Ok
+            )
+            return
+
+        if not self.point_manager_widget:
+            QMessageBox.information(
+                self.editor,
+                "Settings Not Available",
+                "Global settings are not available: point manager widget is not initialized.",
+                QMessageBox.StandardButton.Ok
+            )
+            return
+
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.geometry()
+        screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+        dialog = GlobalSettingsDialog(self.point_manager_widget, self.glue_type_names, parent=self.editor)
+        dialog.setMinimumWidth(screen_width)
+        dialog.setMinimumHeight(int(screen_height / 2))
+        dialog.setMaximumHeight(int(screen_height / 2))
+        dialog.adjustSize()
+        dialog.show()
 
     def _fetch_glue_types(self):
         """Request glue types via signal - controller will handle the fetch and respond"""

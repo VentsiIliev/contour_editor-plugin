@@ -2,8 +2,11 @@ from PyQt6.QtWidgets import (
     QApplication, QDialog, QLabel, QVBoxLayout, QGridLayout
 )
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont
+
 from .ToolIconWidget import ToolIconWidget
 from ...persistence.providers import IconProvider
+from .styles import PRIMARY_DARK, BORDER, BG_COLOR
 
 
 class ToolsPopup(QDialog):
@@ -12,7 +15,7 @@ class ToolsPopup(QDialog):
     # Qt signal for tool selection
     toolSelected = pyqtSignal(str)
 
-    def __init__(self, parent=None, on_tool_selected=None, active_states=None,auto_close_on_select=False):
+    def __init__(self, parent=None, on_tool_selected=None, active_states=None, auto_close_on_select=False):
         super().__init__(parent)
 
         # Optional Python callback (for non-slot usage)
@@ -46,14 +49,12 @@ class ToolsPopup(QDialog):
         # Title
         title = QLabel("Tools")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("""
-            QLabel {
-                color: #1D1B20;
-                font-size: 16px;
-                font-weight: bold;
-                font-family: 'Roboto', 'Segoe UI', sans-serif;
+        title.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        title.setStyleSheet(f"""
+            QLabel {{
+                color: {PRIMARY_DARK};
                 margin-bottom: 8px;
-            }
+            }}
         """)
         main_layout.addWidget(title)
 
@@ -81,13 +82,13 @@ class ToolsPopup(QDialog):
 
         main_layout.addLayout(tools_layout)
 
-        # Apply Material Design styling
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #FFFBFE;
-                border: 1px solid #CAC4D0;
+        # Apply consistent styling
+        self.setStyleSheet(f"""
+            QDialog {{
+                background-color: {BG_COLOR};
+                border: 1px solid {BORDER};
                 border-radius: 12px;
-            }
+            }}
         """)
 
     # -------------------------------------------------------------------------
@@ -109,7 +110,7 @@ class ToolsPopup(QDialog):
     def _on_tool_clicked(self, tool_name):
         """Handle tool selection, emit signal, invoke callback, and close popup."""
         print(f"ToolsPopup: Tool clicked: {tool_name}")
-        
+
         # Emit Qt signal for connected slots
         self.toolSelected.emit(tool_name)
 

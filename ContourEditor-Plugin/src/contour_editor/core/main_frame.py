@@ -23,11 +23,12 @@ from shapely import Polygon, LineString
 from contour_editor.models.bezier_segment_manager import BezierSegmentManager
 from contour_editor.services.contour_processing_service import ContourProcessingService
 from contour_editor.core.editor_with_toolbar import ContourEditorWithBottomToolBar
-from contour_editor.ui.widgets.LayerAndValueInputDialog import LayerAndValueInputDialog
-from contour_editor.ui.widgets.PointManagerWidget import PointManagerWidget
-from contour_editor.ui.widgets.SlidingPanel import SlidingPanel
+from contour_editor.ui.new_widgets.LayerAndValueInputDialog import LayerAndValueInputDialog
+from contour_editor.ui.new_widgets.point_manager.point_manager_widget import PointManagerWidget
+from contour_editor.ui.new_widgets.SlidingPanel import SlidingPanel
 from contour_editor.persistence.utils.utils import shrink_contour_points, generate_spray_pattern
-from contour_editor.ui.widgets.TopbarWidget import TopBarWidget
+# from contour_editor.ui.new_widgets.TopbarWidget import TopBarWidget
+from contour_editor.ui.new_widgets.TopbarWidget import TopBarWidget
 from contour_editor.persistence.providers import DialogProvider, AdditionalFormProvider
 
 
@@ -60,12 +61,13 @@ class MainApplicationFrame(QFrame):
         self.contour_processing_service = ContourProcessingService(actual_editor.manager)
 
         # Top bar widget
-        self.topbar = TopBarWidget(self.contourEditor, None)
+        # self.topbar = TopBarWidget(self.contourEditor, None)
+        self.topbar = TopBarWidget()
         self.topbar.save_requested.connect(self.on_first_save_clicked)
         self.topbar.capture_requested.connect(self.capture_requested.emit)
         self.topbar.start_requested.connect(self.onStart)
-        self.topbar.zigzag_requested.connect(self.generateLineGridPattern)
-        self.topbar.offset_requested.connect(self.shrink)
+        self.topbar.generate_pattern_requested.connect(self.generateLineGridPattern)
+        # self.topbar.offset_requested.connect(self.shrink)
         self.topbar.undo_requested.connect(self.on_undo)
         self.topbar.redo_requested.connect(self.on_redo)
         self.topbar.preview_requested.connect(self.show_preview)
@@ -532,10 +534,10 @@ class MainApplicationFrame(QFrame):
         if not hasattr(self, 'topbar'):
             return
 
-        # Adjust icon sizes of the sidebar buttons
-        icon_size = int(new_width * 0.05)  # 5% of the new window width
-        for button in self.topbar.buttons:
-            button.setIconSize(QSize(icon_size, icon_size))
+        # # Adjust icon sizes of the sidebar buttons
+        # icon_size = int(new_width * 0.05)  # 5% of the new window width
+        # for button in self.topbar.buttons:
+        #     button.setIconSize(QSize(icon_size, icon_size))
 
         if self.additional_data_form is not None:
 

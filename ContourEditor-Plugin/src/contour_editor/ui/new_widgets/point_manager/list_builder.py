@@ -1,8 +1,8 @@
 from PyQt6.QtCore import Qt, QSize, QPointF
 from PyQt6.QtWidgets import QListWidgetItem
 
-from contour_editor.ui.widgets.LayerButtonsWidget import LayerButtonsWidget
-from contour_editor.ui.widgets.SegmentButtonsAndComboWidget import SegmentButtonsAndComboWidget
+from contour_editor.ui.new_widgets.LayerButtonsWidget import LayerButtonsWidget
+from contour_editor.ui.new_widgets.SegmentButtonsAndComboWidget import SegmentButtonsAndComboWidget
 
 from .models import ListItemData
 from .list_item_widgets import (
@@ -144,7 +144,7 @@ class ListBuilder:
     def _add_point_item(self, label, coordinates, seg_index, point_index, point_type):
         """Add a point item to the list"""
         item = QListWidgetItem()
-        item.setSizeHint(QSize(0, 30))
+        item.setSizeHint(QSize(0, 55))
 
         item_data = ListItemData('point', seg_index=seg_index, point_index=point_index, point_type=point_type)
         item.setData(Qt.ItemDataRole.UserRole, item_data)

@@ -5,6 +5,8 @@ Contains a floating toggle button to show/hide the panel.
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, QPoint
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFrame
 
+from .styles import PRIMARY, PRIMARY_DARK, BG_COLOR, BORDER
+
 
 class SlidingPanel(QWidget):
     """A panel that slides in from the right side with a floating toggle button"""
@@ -31,11 +33,11 @@ class SlidingPanel(QWidget):
         # Panel container (the part that slides)
         self.panel_container = QFrame(self)
         self.panel_container.setFixedWidth(self.panel_width)
-        self.panel_container.setStyleSheet("""
-            QFrame {
-                background-color: #f5f5f5;
-                border-left: 1px solid #cccccc;
-            }
+        self.panel_container.setStyleSheet(f"""
+            QFrame {{
+                background-color: {BG_COLOR};
+                border-left: 1px solid {BORDER};
+            }}
         """)
 
         # Panel layout
@@ -50,21 +52,21 @@ class SlidingPanel(QWidget):
         # Toggle button (floating on the left edge of the panel)
         self.toggle_button = QPushButton("◀", self)  # Left arrow when visible
         self.toggle_button.setFixedSize(35, 100)
-        self.toggle_button.setStyleSheet("""
-            QPushButton {
-                background-color: #6750A4;
+        self.toggle_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {PRIMARY};
                 color: white;
                 border: none;
                 border-radius: 5px 0px 0px 5px;
                 font-size: 20px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #7860B4;
-            }
-            QPushButton:pressed {
-                background-color: #5640A4;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {PRIMARY_DARK};
+            }}
+            QPushButton:pressed {{
+                background-color: {PRIMARY_DARK};
+            }}
         """)
         self.toggle_button.clicked.connect(self.toggle_panel)
         self.toggle_button.show()

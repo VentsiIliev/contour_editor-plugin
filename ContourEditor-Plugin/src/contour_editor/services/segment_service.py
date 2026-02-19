@@ -73,8 +73,6 @@ class SegmentService:
         self.event_bus.points_changed.emit()
 
     def set_layer_locked(self, layer_name, locked):
-        layer = self.manager.getLayer(layer_name)
-        if layer:
-            layer.locked = locked
-            self.event_bus.points_changed.emit()
+        self.manager.set_layer_locked(layer_name, locked)
+        self.event_bus.points_changed.emit()
 

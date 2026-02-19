@@ -2,11 +2,15 @@
 Point info overlay that appears next to a selected point,
 showing quick actions as a radial menu.
 """
-from PyQt6.QtCore import Qt, pyqtSignal, QPoint
+from PyQt6.QtCore import Qt, pyqtSignal, QPoint, QSize
 from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtGui import QFont
+import qtawesome as qta
+
 from ...tests.examples.radial_menu_demo import RadialMenu
 import math
+
+from .styles import PRIMARY, PRIMARY_DARK, BORDER, ICON_COLOR
 
 
 class PointInfoOverlay(RadialMenu):
@@ -44,19 +48,20 @@ class PointInfoOverlay(RadialMenu):
         self.selected_line_id = None  # Track the selected line ID
 
         # Create "Set Length" button (shown when a line is selected)
-        self.set_length_btn = QPushButton("📏", self)
-        self.set_length_btn.setFont(QFont("Arial", 20))
+        self.set_length_btn = QPushButton(self)
+        self.set_length_btn.setIcon(qta.icon("fa5s.ruler", color="white"))
+        self.set_length_btn.setIconSize(QSize(22, 22))
         self.set_length_btn.setFixedSize(50, 50)
-        self.set_length_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #2196F3;
+        self.set_length_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {PRIMARY};
                 color: white;
                 border-radius: 25px;
                 border: 2px solid white;
-            }
-            QPushButton:hover {
-                background-color: #42A5F5;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {PRIMARY_DARK};
+            }}
         """)
         self.set_length_btn.setToolTip("Set Line Length")
         self.set_length_btn.clicked.connect(self._on_set_length_clicked)
@@ -88,16 +93,16 @@ class PointInfoOverlay(RadialMenu):
             # Select new button
             self.selected_line_button = button
             self.selected_line_id = line_id
-            button.setStyleSheet("""
-                QPushButton {
-                    background-color: #FFA500;
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {PRIMARY_DARK};
                     color: white;
                     border-radius: 25px;
-                    border: 3px solid #FFD700;
-                }
-                QPushButton:hover {
-                    background-color: #FFB732;
-                }
+                    border: 3px solid {PRIMARY};
+                }}
+                QPushButton:hover {{
+                    background-color: {PRIMARY};
+                }}
             """)
 
             # Show and position set length button at center
@@ -113,19 +118,19 @@ class PointInfoOverlay(RadialMenu):
     def _deselect_line_button(self):
         """Deselect the currently selected line button"""
         if self.selected_line_button:
-            self.selected_line_button.setStyleSheet("""
-                QPushButton {
-                    background-color: #6750A4;
+            self.selected_line_button.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {PRIMARY};
                     color: white;
                     border-radius: 25px;
                     border: 2px solid white;
-                }
-                QPushButton:hover {
-                    background-color: #7860B4;
-                }
-                QPushButton:pressed {
-                    background-color: #FFA500;
-                }
+                }}
+                QPushButton:hover {{
+                    background-color: {PRIMARY_DARK};
+                }}
+                QPushButton:pressed {{
+                    background-color: {PRIMARY_DARK};
+                }}
             """)
             self.selected_line_button = None
 
@@ -154,19 +159,19 @@ class PointInfoOverlay(RadialMenu):
             btn = QPushButton(f"L{line_id}", self)
             btn.setFont(QFont("Arial", 12, QFont.Weight.Bold))
             btn.setFixedSize(50, 50)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #6750A4;
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {PRIMARY};
                     color: white;
                     border-radius: 25px;
                     border: 2px solid white;
-                }
-                QPushButton:hover {
-                    background-color: #7860B4;
-                }
-                QPushButton:pressed {
-                    background-color: #FFA500;
-                }
+                }}
+                QPushButton:hover {{
+                    background-color: {PRIMARY_DARK};
+                }}
+                QPushButton:pressed {{
+                    background-color: {PRIMARY_DARK};
+                }}
             """)
             btn.setToolTip(f"Line segment {line_id}")
             btn.setProperty("line_id", line_id)  # Store line ID in button
@@ -175,18 +180,20 @@ class PointInfoOverlay(RadialMenu):
             self.tool_buttons.append(btn)
 
         # Add delete button at the end
-        delete_btn = QPushButton("🗑️", self)
-        delete_btn.setFont(QFont("Arial", 20))
+        delete_btn = QPushButton(self)
+        delete_btn.setIcon(qta.icon("fa5s.trash-alt", color="white"))
+        delete_btn.setIconSize(QSize(20, 20))
         delete_btn.setFixedSize(50, 50)
+        delete_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         delete_btn.setStyleSheet("""
             QPushButton {
-                background-color: #FF5252;
+                background-color: #E53935;
                 color: white;
                 border-radius: 25px;
                 border: 2px solid white;
             }
             QPushButton:hover {
-                background-color: #FF6666;
+                background-color: #C62828;
             }
         """)
         delete_btn.setToolTip("Delete Point")

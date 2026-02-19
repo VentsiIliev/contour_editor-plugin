@@ -3,8 +3,8 @@ from PyQt6.QtGui import QCursor
 
 from ...persistence.config.constants import EDIT_MODE, RECTANGLE_SELECT_MODE
 from ...persistence.utils.coordinate_utils import map_to_image_space
-from ...ui.widgets.ToolsPopup import ToolsPopup
-from ...ui.widgets.MagnifierWidget import MagnifierWidget
+from ...ui.new_widgets.ToolsPopup import ToolsPopup
+from ...ui.new_widgets.MagnifierWidget import MagnifierWidget
 from ..state.mode_handlers.ruler_mode import RulerMode
 from ..state.mode_handlers.rectangle_select_mode import RectangleSelectMode
 
