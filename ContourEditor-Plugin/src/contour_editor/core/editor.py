@@ -81,6 +81,7 @@ class ContourEditor(QFrame):
         self.grabGesture(Qt.GestureType.PinchGesture)
 
         self.contours = None
+        self.verification_contours = []
         # Pickup point functionality (TODO: Move to ModeManager)
         self.pickup_point_mode_active = False
         self.pickup_point = None
@@ -352,6 +353,14 @@ class ContourEditor(QFrame):
 
     def set_image(self, image):
         self.viewport_controller.set_image(image)
+
+    def set_verification_contours(self, contours):
+        self.verification_contours = list(contours or [])
+        self.update()
+
+    def clear_verification_contours(self):
+        self.verification_contours = []
+        self.update()
 
     def update_image(self, image_input):
         self.viewport_controller.update_image(image_input)

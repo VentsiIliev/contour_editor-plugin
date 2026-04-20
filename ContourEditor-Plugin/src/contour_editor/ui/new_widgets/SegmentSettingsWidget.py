@@ -2,7 +2,7 @@
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QComboBox,
-    QSizePolicy, QPushButton, QScrollArea, QTabWidget
+    QSizePolicy, QPushButton, QScrollArea, QTabWidget, QApplication
 )
 from PyQt6.QtCore import pyqtSignal, Qt, QSize
 from PyQt6.QtGui import QFont
@@ -358,3 +358,4 @@ def get_default_settings():
     """Get the current default settings"""
     service = SettingsService.get_instance()
     return service.get_defaults()
+

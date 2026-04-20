@@ -29,7 +29,11 @@ from contour_editor.ui.new_widgets.SlidingPanel import SlidingPanel
 from contour_editor.persistence.utils.utils import shrink_contour_points, generate_spray_pattern
 # from contour_editor.ui.new_widgets.TopbarWidget import TopBarWidget
 from contour_editor.ui.new_widgets.TopbarWidget import TopBarWidget
-from contour_editor.persistence.providers import DialogProvider, AdditionalFormProvider
+from contour_editor.persistence.providers import (
+    DialogProvider,
+    AdditionalFormProvider,
+    AdditionalFormBehaviorProvider,
+)
 
 
 class MainApplicationFrame(QFrame):
@@ -39,6 +43,7 @@ class MainApplicationFrame(QFrame):
     execute_requested = pyqtSignal(object)  # Signal to request execution
     start_requested = pyqtSignal()  # Signal when start/execute button is pressed
     capture_data_received = pyqtSignal(dict, bool)  # Signal when capture data is received (data, close_contour)
+    additional_form_created = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -202,6 +207,12 @@ class MainApplicationFrame(QFrame):
             self.additional_data_form.onSubmitCallBack = callback
             print("[MainApplicationFrame] Custom form submit callback set")
 
+    def set_verification_contours(self, contours) -> None:
+        self.contourEditor.editor_with_rulers.editor.set_verification_contours(contours)
+
+    def clear_verification_contours(self) -> None:
+        self.contourEditor.editor_with_rulers.editor.clear_verification_contours()
+
     def shrink(self):
         contour_points = self.contour_processing_service.get_main_contour_points()
 
@@ -354,6 +365,8 @@ class MainApplicationFrame(QFrame):
                         self.additional_data_form.data_submitted.connect(
                             lambda data: self.save_requested.emit(data)
                         )
+                    AdditionalFormBehaviorProvider.get().apply_behaviors(self.additional_data_form, self)
+                    self.additional_form_created.emit(self.additional_data_form)
                     print("[ContourEditor] Additional data form successfully created via provider")
 
             # Try to create form using AdditionalFormProvider
@@ -554,5 +567,4 @@ class MainApplicationFrame(QFrame):
                         Qt.TransformationMode.SmoothTransformation
                     )
                     label.setPixmap(scaled_pixmap)
-
 

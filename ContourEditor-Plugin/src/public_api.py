@@ -145,6 +145,16 @@ def configure_additional_data_form(form_factory):
     AdditionalFormProvider.get().set_factory(form_factory)
 
 
+def configure_additional_form_behavior(behavior):
+    """
+    Register an optional behavior that augments a live additional-data form.
+
+    Behaviors are applied when the editor creates the form instance.
+    """
+    from contour_editor import AdditionalFormBehaviorProvider
+    AdditionalFormBehaviorProvider.get().add_behavior(behavior)
+
+
 def build_generic_editor(parent=None):
     """
     Build a basic domain-agnostic contour editor.
@@ -177,4 +187,3 @@ def build_workpiece_editor(parent=None):
             .with_parent(parent)
             .with_segment_manager(BezierSegmentManager)
             .build())
-

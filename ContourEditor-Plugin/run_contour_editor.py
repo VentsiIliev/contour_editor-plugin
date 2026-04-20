@@ -143,6 +143,7 @@ def main():
               .with_segment_manager(BezierSegmentManager)
               .with_settings(config, provider)
               .build())
+    editor.resize(1280, 1024)
     editor.show()
     editor.setWindowTitle("Contour Editor - Pure Generic Mode")
     print("\n✅ Pure Contour Editor launched successfully")

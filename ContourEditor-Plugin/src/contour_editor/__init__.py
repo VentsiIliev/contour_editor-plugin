@@ -33,7 +33,8 @@ from .persistence.providers import (
     DialogProvider,
     WidgetProvider,
     IconProvider,
-    AdditionalFormProvider
+    AdditionalFormProvider,
+    AdditionalFormBehaviorProvider,
 )
 from .persistence.data.segment_provider import SegmentManagerProvider
 from .persistence.data.settings_provider_registry import SettingsProviderRegistry
@@ -100,6 +101,7 @@ __all__ = [
     'WidgetProvider',
     'IconProvider',
     'AdditionalFormProvider',
+    'AdditionalFormBehaviorProvider',
     'SegmentManagerProvider',
     'SettingsProviderRegistry',
 

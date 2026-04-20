@@ -104,6 +104,7 @@ src/contour_editor/persistence/model/SettingsConfig.py
 src/contour_editor/persistence/model/__init__.py
 src/contour_editor/persistence/providers/__init__.py
 src/contour_editor/persistence/providers/dialog_provider.py
+src/contour_editor/persistence/providers/form_behavior_provider.py
 src/contour_editor/persistence/providers/form_provider.py
 src/contour_editor/persistence/providers/icon_provider.py
 src/contour_editor/persistence/providers/widget_provider.py
@@ -134,6 +135,7 @@ src/contour_editor/tests/examples/__init__.py
 src/contour_editor/tests/examples/mock_workpiece.py
 src/contour_editor/tests/examples/radial_menu_demo.py
 src/contour_editor/ui/__init__.py
+src/contour_editor/ui/form_field_hooks.py
 src/contour_editor/ui/dialogs/__init__.py
 src/contour_editor/ui/new_widgets/BottomToolBar.py
 src/contour_editor/ui/new_widgets/ConstantsSettingsDialog.py
