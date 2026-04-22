@@ -438,7 +438,7 @@ class ContourEditor(QFrame):
         else:
             self.drag_timer.stop()
 
-    def addNewSegment(self, layer_name="Contour"):
+    def addNewSegment(self, layer_name=None):
         """Add new segment - delegates to external manager"""
         new_segment = self.segment_action_controller.add_new_segment(layer_name)
         self.update()

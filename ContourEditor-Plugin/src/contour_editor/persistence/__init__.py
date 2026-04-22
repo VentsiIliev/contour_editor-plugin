@@ -1,4 +1,4 @@
-from .data import ContourEditorData, SegmentManagerProvider, SettingsProviderRegistry
+from .data import ContourEditorData, SegmentManagerProvider, SettingsProviderRegistry, LayerConfigRegistry
 from .providers import (
     DialogProvider,
     WidgetProvider,
@@ -7,10 +7,12 @@ from .providers import (
     AdditionalFormBehaviorProvider,
 )
 from .config import ConstantsManager
+from .config.layer_config import ContourEditorLayerConfig, LayerRoleConfig
 
 __all__ = [
-    'ContourEditorData', 'SegmentManagerProvider', 'SettingsProviderRegistry',
+    'ContourEditorData', 'SegmentManagerProvider', 'SettingsProviderRegistry', 'LayerConfigRegistry',
     'DialogProvider', 'WidgetProvider', 'IconProvider', 'AdditionalFormProvider',
     'AdditionalFormBehaviorProvider',
-    'ConstantsManager'
+    'ConstantsManager',
+    'ContourEditorLayerConfig', 'LayerRoleConfig',
 ]

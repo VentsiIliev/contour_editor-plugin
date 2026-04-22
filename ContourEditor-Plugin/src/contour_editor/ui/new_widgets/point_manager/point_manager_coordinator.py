@@ -169,5 +169,6 @@ class PointManagerCoordinator(QWidget):
             item_data = current_item.data(Qt.ItemDataRole.UserRole)
             if item_data and item_data.item_type == 'layer':
                 return item_data.layer_name
+        if hasattr(self.contour_editor.manager, "layer_config"):
+            return self.contour_editor.manager.layer_config.default_segment_layer_name()
         return "Main"
-

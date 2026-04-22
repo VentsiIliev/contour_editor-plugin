@@ -14,10 +14,11 @@ from .styles import PRIMARY, PRIMARY_DARK, BORDER, ICON_COLOR, NORMAL_STYLE, ACT
 class LayerSelectionPopup(QMenu):
     """Custom popup menu for layer selection"""
 
-    def __init__(self, current_layer, on_layer_change, parent=None):
+    def __init__(self, current_layer, layer_options, on_layer_change, parent=None):
         super().__init__(parent)
         self.on_layer_change = on_layer_change
         self.current_layer = current_layer
+        self.layer_options = list(layer_options)
 
         # Modern purple theme styling
         self.setStyleSheet(f"""
@@ -47,8 +48,7 @@ class LayerSelectionPopup(QMenu):
         # ...existing code...
 
         # Add layer options
-        layers = ["Main", "Contour", "Fill"]
-        for layer in layers:
+        for layer in self.layer_options:
             action = self.addAction(layer)
             action.triggered.connect(lambda checked, l=layer: self._on_layer_selected(l))
 
@@ -128,7 +128,8 @@ class PressAndHoldButton(QPushButton):
 
 class SegmentButtonsAndComboWidget(QWidget):
     def __init__(self, seg_index, segment, layer_name,
-                 on_visibility, on_activate, on_delete, on_settings, on_layer_change, on_long_press):
+                 on_visibility, on_activate, on_delete, on_settings, on_layer_change, on_long_press,
+                 layer_options=None):
         super().__init__()
 
         self.segment = segment
@@ -136,6 +137,7 @@ class SegmentButtonsAndComboWidget(QWidget):
         self.on_layer_change = on_layer_change
         self.seg_index = seg_index
         self.current_layer = layer_name
+        self.layer_options = list(layer_options or ["Main", "Contour", "Fill"])
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -177,6 +179,7 @@ class SegmentButtonsAndComboWidget(QWidget):
         """Show layer selection popup on long press"""
         popup = LayerSelectionPopup(
             current_layer=self.current_layer,
+            layer_options=self.layer_options,
             on_layer_change=self._handle_layer_change,
             parent=self
         )

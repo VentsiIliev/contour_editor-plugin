@@ -57,10 +57,17 @@ class DeleteSegmentCommand(Command):
 
 
 class AddSegmentCommand(Command):
-    def __init__(self, manager, layer_name="Contour"):
+    def __init__(self, manager, layer_name=None):
         super().__init__()
         self.manager = manager
-        self.layer_name = layer_name
+        self.layer_name = (
+            layer_name
+            or (
+                manager.layer_config.default_segment_layer_name()
+                if hasattr(manager, "layer_config")
+                else "Contour"
+            )
+        )
         self.seg_index = None
         self.created_segment = None
 
@@ -107,4 +114,3 @@ class ChangeSegmentLayerCommand(Command):
 
     def get_description(self):
         return f"Change segment {self.seg_index} layer to {self.new_layer_name}"
-

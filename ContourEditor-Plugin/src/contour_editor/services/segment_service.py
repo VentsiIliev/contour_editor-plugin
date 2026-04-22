@@ -12,7 +12,9 @@ class SegmentService:
         self.command_history = command_history
         self.event_bus = event_bus
 
-    def add_segment(self, layer_name="Contour"):
+    def add_segment(self, layer_name=None):
+        if layer_name is None and hasattr(self.manager, "layer_config"):
+            layer_name = self.manager.layer_config.default_segment_layer_name()
         cmd = AddSegmentCommand(self.manager, layer_name)
         self.command_history.execute(cmd)
         return cmd.seg_index
@@ -53,13 +55,7 @@ class SegmentService:
         self.event_bus.active_segment_changed.emit(seg_index)
 
     def set_layer_visibility(self, layer_name, visible):
-        layer = None
-        if layer_name == "Main":
-            layer = self.manager.external_layer
-        elif layer_name == "Contour":
-            layer = self.manager.contour_layer
-        elif layer_name == "Fill":
-            layer = self.manager.fill_layer
+        layer = self.manager._layer_for_name(layer_name) if hasattr(self.manager, "_layer_for_name") else None
 
         if layer is None:
             return
@@ -75,4 +71,3 @@ class SegmentService:
     def set_layer_locked(self, layer_name, locked):
         self.manager.set_layer_locked(layer_name, locked)
         self.event_bus.points_changed.emit()
-

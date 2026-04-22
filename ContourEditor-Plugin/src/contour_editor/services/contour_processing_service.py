@@ -27,8 +27,12 @@ class ContourProcessingService:
                 if hasattr(seg, 'layer') and seg.layer and seg.layer.name == layer_name
             ]
         else:
-            # Try common layer names for backward compatibility
-            for common_name in ["Main", "Contour"]:
+            common_names = (
+                self.manager.get_main_contour_layer_names()
+                if hasattr(self.manager, "get_main_contour_layer_names")
+                else ["Main", "Contour"]
+            )
+            for common_name in common_names:
                 external_segments = [
                     seg for seg in self.manager.get_segments()
                     if hasattr(seg, 'layer') and seg.layer and seg.layer.name == common_name
@@ -164,4 +168,3 @@ class ContourProcessingService:
             reverse = not reverse
 
         return segments
-

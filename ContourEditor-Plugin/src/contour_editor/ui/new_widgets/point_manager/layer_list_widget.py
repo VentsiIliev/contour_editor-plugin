@@ -51,7 +51,8 @@ class LayerListWidget(QListWidget):
         self.clear()
         self.layer_items = {}
 
-        for name in ["Main", "Contour", "Fill"]:
+        layer_names = contour_editor.manager.get_available_layer_names() if contour_editor else []
+        for name in layer_names:
             self._create_layer_item(name, contour_editor)
 
     def _create_layer_item(self, name, contour_editor):

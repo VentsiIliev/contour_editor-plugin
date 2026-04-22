@@ -24,6 +24,12 @@ LAYER_COLORS = {
     "Fill": QColor("#00FF00"),  # Green
 }
 
+
+def set_layer_colors(color_map: dict[str, str]) -> None:
+    LAYER_COLORS.clear()
+    for layer_name, color in color_map.items():
+        LAYER_COLORS[layer_name] = QColor(color)
+
 # ============================================================================
 # COORDINATE AXES & ANGLE VISUALIZATION
 # ============================================================================

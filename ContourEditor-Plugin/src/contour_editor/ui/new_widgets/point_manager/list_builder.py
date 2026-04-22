@@ -38,9 +38,9 @@ class ListBuilder:
         self.layers = {}
         self.layer_items = {}
         self.expanded_layers.clear()
-        self.expanded_layers.update({"Main", "Contour", "Fill"})
+        self.expanded_layers.update(self.contour_editor.manager.get_available_layer_names())
 
-        for name in ["Main", "Contour", "Fill"]:
+        for name in self.contour_editor.manager.get_available_layer_names():
             self._create_layer_item(name)
 
     def rebuild_list(self):
@@ -49,7 +49,7 @@ class ListBuilder:
         self.layer_items = {}
         self.segment_items = {}
 
-        for layer_name in ["Main", "Contour", "Fill"]:
+        for layer_name in self.contour_editor.manager.get_available_layer_names():
             self._create_layer_item(layer_name)
 
             if layer_name in self.expanded_layers:
@@ -191,5 +191,6 @@ class ListBuilder:
             on_delete=on_delete,
             on_settings=on_settings,
             on_layer_change=on_layer_change,
-            on_long_press=on_long_press
+            on_long_press=on_long_press,
+            layer_options=self.contour_editor.manager.get_available_layer_names(),
         )

@@ -7,17 +7,55 @@ import numpy as np
 from PyQt6.QtCore import QPointF
 
 from .segment import Segment, Layer
+from ..persistence.data.layer_config_registry import LayerConfigRegistry
 
 
 class BezierSegmentManager:
     def __init__(self):
+        self.layer_config = LayerConfigRegistry.get_instance().get_config()
         self.active_segment_index = 0
         self.undo_stack = []
         self.redo_stack = []
-        self.external_layer = Layer("Main", False, True)
-        self.contour_layer = Layer("Contour", False, True)
-        self.fill_layer = Layer("Fill", False, True)
-        self.segments: list[Segment] = [Segment(layer=self.contour_layer)]
+        self.external_layer = self._make_layer("workpiece")
+        self.contour_layer = self._make_layer("contour")
+        self.fill_layer = self._make_layer("fill")
+        self.segments: list[Segment] = [Segment(layer=self._default_segment_layer())]
+
+    def _make_layer(self, role_name: str) -> Layer:
+        cfg = self.layer_config.role(role_name)
+        return Layer(cfg.name, False, cfg.visible)
+
+    def _role_layer_pairs(self):
+        return (
+            ("workpiece", self.external_layer),
+            ("contour", self.contour_layer),
+            ("fill", self.fill_layer),
+        )
+
+    def _layer_for_name(self, layer_name):
+        for _, layer in self._role_layer_pairs():
+            if layer.name == layer_name:
+                return layer
+        return None
+
+    def _default_segment_layer(self):
+        return self._layer_for_name(self.layer_config.default_segment_layer_name())
+
+    def get_available_layer_names(self):
+        return self.layer_config.enabled_layer_names()
+
+    def get_pattern_layer_names(self):
+        return self.layer_config.pattern_layer_names()
+
+    def get_main_contour_layer_names(self):
+        return self.layer_config.main_contour_layer_names()
+
+    def is_fill_layer_name(self, layer_name):
+        return self.layer_config.is_fill_layer_name(layer_name)
+
+    def _is_layer_locked(self, layer_name):
+        layer = self._layer_for_name(layer_name)
+        return bool(layer and layer.locked)
 
     def undo(self):
         if not self.undo_stack:
@@ -43,21 +81,15 @@ class BezierSegmentManager:
             layer_name = getattr(segment, 'layer', None)
 
             if layer_name:
-                if ((layer_name == "Main" and self.external_layer.locked) or
-                        (layer_name == "Contour" and self.contour_layer.locked) or
-                        (layer_name == "Fill" and self.fill_layer.locked)):
+                if self._is_layer_locked(getattr(layer_name, "name", layer_name)):
                     return
 
             self.active_segment_index = seg_index
 
-    def create_segment(self, points, layer_name="Contour"):
-        if layer_name == "Main":
-            layer = self.external_layer
-        elif layer_name == "Contour":
-            layer = self.contour_layer
-        elif layer_name == "Fill":
-            layer = self.fill_layer
-        else:
+    def create_segment(self, points, layer_name=None):
+        layer_name = layer_name or self.layer_config.default_segment_layer_name()
+        layer = self._layer_for_name(layer_name)
+        if layer is None:
             raise ValueError(f"Invalid layer name: {layer_name}")
 
         segment = Segment(layer=layer)
@@ -66,29 +98,21 @@ class BezierSegmentManager:
         return segment
 
     def start_new_segment(self, layer=None):
+        layer = layer or self.layer_config.default_segment_layer_name()
         if len(self.segments) > 0:
             pass
 
         if layer:
-            if layer == "Main" and self.external_layer.locked:
-                return None, False
-            elif layer == "Contour" and self.contour_layer.locked:
-                return None, False
-            elif layer == "Fill" and self.fill_layer.locked:
+            if self._is_layer_locked(layer):
                 return None, False
 
-        if layer == "Main":
-            layer = self.external_layer
-        elif layer == "Contour":
-            layer = self.contour_layer
-        elif layer == "Fill":
-            layer = self.fill_layer
-        else:
+        layer_obj = self._layer_for_name(layer)
+        if layer_obj is None:
             raise ValueError(f"Invalid layer name: {layer}")
 
-        new_segment = Segment(layer=layer)
+        new_segment = Segment(layer=layer_obj)
         self.segments.append(new_segment)
-        layer.add_segment(new_segment)
+        layer_obj.add_segment(new_segment)
         self.active_segment_index = len(self.segments) - 1
         return new_segment, True
 
@@ -98,14 +122,10 @@ class BezierSegmentManager:
             return
 
         if 0 <= seg_index < len(self.segments):
-            if layer_name == "Main":
-                segment.layer = self.external_layer
-            elif layer_name == "Contour":
-                segment.layer = self.contour_layer
-            elif layer_name == "Fill":
-                segment.layer = self.fill_layer
-            else:
+            layer = self._layer_for_name(layer_name)
+            if layer is None:
                 return
+            segment.layer = layer
 
     def add_point(self, pos: QPointF):
         if 0 <= self.active_segment_index < len(self.segments):
@@ -125,9 +145,7 @@ class BezierSegmentManager:
 
     def to_wp_data(self, samples_per_segment=5):
         path_points = {
-            "Main": [],
-            "Contour": [],
-            "Fill": []
+            layer_name: [] for layer_name in self.get_available_layer_names()
         }
 
         def is_cp_effective(p0, cp, p1, threshold=1.0):
@@ -167,7 +185,7 @@ class BezierSegmentManager:
                     "settings": dict(segment.settings)
                 })
 
-        for layer_name in ["Main", "Contour", "Fill"]:
+        for layer_name in self.get_available_layer_names():
             if not path_points[layer_name]:
                 path_points[layer_name].append({
                     "contour": np.empty((0, 1, 2), dtype=np.float32),
@@ -414,9 +432,7 @@ class BezierSegmentManager:
 
         layer_name = getattr(segment, 'layer', None)
         if layer_name:
-            if ((layer_name == "Main" and self.external_layer.locked) or
-                    (layer_name == "Contour" and self.contour_layer.locked) or
-                    (layer_name == "Fill" and self.fill_layer.locked)):
+            if self._is_layer_locked(getattr(layer_name, "name", layer_name)):
                 return
 
         if role == 'anchor':
@@ -579,32 +595,25 @@ class BezierSegmentManager:
         return dist <= threshold
 
     def set_layer_locked(self, layer_name, locked):
-        if layer_name == "Main":
-            self.external_layer.locked = locked
-        elif layer_name == "Contour":
-            self.contour_layer.locked = locked
-        elif layer_name == "Fill":
-            self.fill_layer.locked = locked
+        layer = self._layer_for_name(layer_name)
+        if layer is not None:
+            layer.locked = locked
 
         self._fix_segment_layer_references()
 
     def _fix_segment_layer_references(self):
         for i, segment in enumerate(self.segments):
-            if segment.layer and segment.layer.name == "Main" and segment.layer is not self.external_layer:
-                segment.layer = self.external_layer
-            elif segment.layer and segment.layer.name == "Contour" and segment.layer is not self.contour_layer:
-                segment.layer = self.contour_layer
-            elif segment.layer and segment.layer.name == "Fill" and segment.layer is not self.fill_layer:
-                segment.layer = self.fill_layer
+            if not segment.layer:
+                continue
+            canonical_layer = self._layer_for_name(segment.layer.name)
+            if canonical_layer is not None and segment.layer is not canonical_layer:
+                segment.layer = canonical_layer
 
     def isLayerLocked(self, layer_name):
-        if layer_name == "Main":
-            return self.external_layer.locked
-        elif layer_name == "Contour":
-            return self.contour_layer.locked
-        elif layer_name == "Fill":
-            return self.fill_layer.locked
-        return
+        layer = self._layer_for_name(layer_name)
+        if layer is not None:
+            return layer.locked
+        return None
 
     def get_significant_points(self, points, num_points):
         if len(points) <= num_points:
@@ -682,4 +691,3 @@ class BezierSegmentManager:
     def clear_all_segments(self):
         self.segments.clear()
         self.active_segment_index = -1
-

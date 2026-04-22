@@ -84,7 +84,7 @@ class _SegmentedControl(QFrame):
 
 
 class LayerAndValueInputDialog(QDialog):
-    def __init__(self, dialog_title, layer_label, input_labels, input_defaults, input_ranges, parent=None):
+    def __init__(self, dialog_title, layer_label, input_labels, input_defaults, input_ranges, parent=None, layer_options=None):
         """
         A generic dialog to handle layer selection and value inputs (spacing or shrink offset).
 
@@ -122,7 +122,7 @@ class LayerAndValueInputDialog(QDialog):
         """)
         layout.addWidget(self.layer_label)
 
-        self.layer_combo = _SegmentedControl(["Contour", "Fill"])
+        self.layer_combo = _SegmentedControl(layer_options or ["Contour", "Fill"])
         layout.addWidget(self.layer_combo)
 
         # Touch-friendly input fields

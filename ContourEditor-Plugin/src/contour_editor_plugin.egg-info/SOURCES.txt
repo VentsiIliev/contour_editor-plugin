@@ -96,8 +96,10 @@ src/contour_editor/persistence/config/__init__.py
 src/contour_editor/persistence/config/constants.py
 src/contour_editor/persistence/config/constants_manager.py
 src/contour_editor/persistence/config/contour_editor_settings.json
+src/contour_editor/persistence/config/layer_config.py
 src/contour_editor/persistence/data/__init__.py
 src/contour_editor/persistence/data/editor_data_model.py
+src/contour_editor/persistence/data/layer_config_registry.py
 src/contour_editor/persistence/data/segment_provider.py
 src/contour_editor/persistence/data/settings_provider_registry.py
 src/contour_editor/persistence/model/SettingsConfig.py

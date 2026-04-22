@@ -155,6 +155,14 @@ def configure_additional_form_behavior(behavior):
     AdditionalFormBehaviorProvider.get().add_behavior(behavior)
 
 
+def configure_layer_config(layer_config):
+    """
+    Configure semantic layer names and visibility for the editor.
+    """
+    from contour_editor import LayerConfigRegistry
+    LayerConfigRegistry.get_instance().set_config(layer_config)
+
+
 def build_generic_editor(parent=None):
     """
     Build a basic domain-agnostic contour editor.

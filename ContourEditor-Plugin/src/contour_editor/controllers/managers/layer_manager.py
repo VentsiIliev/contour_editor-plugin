@@ -25,24 +25,18 @@ class LayerManager:
 
     def get_layer_by_name(self, layer_name):
         """Get layer object by name"""
-        if layer_name == "Main":
-            return self.editor.manager.external_layer
-        elif layer_name == "Contour":
-            return self.editor.manager.contour_layer
-        elif layer_name == "Fill":
-            return self.editor.manager.fill_layer
-        else:
-            return None
+        if hasattr(self.editor.manager, "_layer_for_name"):
+            return self.editor.manager._layer_for_name(layer_name)
+        return None
 
     def get_all_layers(self):
         """Get all available layers"""
         layers = []
-        if hasattr(self.editor.manager, 'external_layer'):
-            layers.append(("Main", self.editor.manager.external_layer))
-        if hasattr(self.editor.manager, 'contour_layer'):
-            layers.append(("Contour", self.editor.manager.contour_layer))
-        if hasattr(self.editor.manager, 'fill_layer'):
-            layers.append(("Fill", self.editor.manager.fill_layer))
+        if hasattr(self.editor.manager, 'get_available_layer_names'):
+            for layer_name in self.editor.manager.get_available_layer_names():
+                layer = self.get_layer_by_name(layer_name)
+                if layer is not None:
+                    layers.append((layer_name, layer))
         return layers
 
     def get_layer_info(self, layer_name):

@@ -6,9 +6,11 @@ from typing import Optional, Callable, Any
 from .core.main_frame import MainApplicationFrame
 from .persistence.data.segment_provider import SegmentManagerProvider
 from .persistence.data.settings_provider_registry import SettingsProviderRegistry
+from .persistence.data.layer_config_registry import LayerConfigRegistry
 from .persistence.providers.form_provider import AdditionalFormProvider
 from .persistence.providers.widget_provider import WidgetProvider
 from .models.settings_config import SettingsConfig
+from .persistence.config.layer_config import ContourEditorLayerConfig
 from .ui.new_widgets.SegmentSettingsWidget import configure_segment_settings
 
 
@@ -29,6 +31,7 @@ class ContourEditorBuilder:
         self._segment_manager_class = None
         self._settings_config: Optional[SettingsConfig] = None
         self._settings_provider = None
+        self._layer_config: Optional[ContourEditorLayerConfig] = None
         self._form_factory = None
         self._widget_factory = None
         self._save_callback: Optional[Callable] = None
@@ -51,6 +54,11 @@ class ContourEditorBuilder:
         """Configure segment settings (optional)"""
         self._settings_config = config
         self._settings_provider = provider
+        return self
+
+    def with_layer_config(self, config: ContourEditorLayerConfig):
+        """Configure semantic layer names and visibility (optional)"""
+        self._layer_config = config
         return self
 
     def with_form(self, form_factory):
@@ -102,6 +110,8 @@ class ContourEditorBuilder:
         self._configure_segment_manager()
         if self._settings_config:
             self._configure_settings()
+        if self._layer_config:
+            self._configure_layer_config()
         if self._widget_factory:
             self._configure_widgets()
         if self._form_factory:
@@ -133,6 +143,11 @@ class ContourEditorBuilder:
         if self._settings_config:
             configure_segment_settings(self._settings_config)
             print("✅ Settings UI configured")
+
+    def _configure_layer_config(self):
+        """Configure editor layer semantics"""
+        LayerConfigRegistry.get_instance().set_config(self._layer_config)
+        print("✅ Layer config registered")
 
     def _configure_widgets(self):
         """Configure custom widget factory"""

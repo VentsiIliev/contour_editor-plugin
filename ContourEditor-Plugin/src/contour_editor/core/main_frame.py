@@ -230,7 +230,8 @@ class MainApplicationFrame(QFrame):
             layer_label="Select layer for shrunk contour:",
             input_labels=["Enter shrink value (mm):"],
             input_defaults=[5],
-            input_ranges=[(1, 50)]
+            input_ranges=[(1, 50)],
+            layer_options=self.contourEditor.manager.get_available_layer_names(),
         )
 
         shrink_dialog.show()
@@ -274,6 +275,15 @@ class MainApplicationFrame(QFrame):
 
     def generateLineGridPattern(self):
         """Generate zig-zag lines aligned to the main contour using minimum area bounding box orientation."""
+        pattern_layers = self.contourEditor.manager.get_pattern_layer_names()
+        if not pattern_layers:
+            DialogProvider.get().show_info(
+                self,
+                "No Pattern Layers",
+                "This editor is configured without pattern layers.",
+                "This editor is configured without pattern layers."
+            )
+            return
 
         contour_points = self.contour_processing_service.get_main_contour_points()
 
@@ -291,7 +301,8 @@ class MainApplicationFrame(QFrame):
             layer_label="Select layer type:",
             input_labels=["Line grid spacing (mm):", "Shrink offset (mm):"],
             input_defaults=[20, 0.0],
-            input_ranges=[(1, 1000), (0.0, 50.0)]
+            input_ranges=[(1, 1000), (0.0, 50.0)],
+            layer_options=pattern_layers,
         )
         dialog.show()
 
@@ -325,7 +336,7 @@ class MainApplicationFrame(QFrame):
             print("Failed to generate spray pattern")
             return
 
-        if selected_layer == "Fill":
+        if self.contourEditor.manager.is_fill_layer_name(selected_layer):
             self.contour_processing_service.create_fill_pattern(
                 zigzag_segments, selected_layer, contour_points
             )
@@ -567,4 +578,3 @@ class MainApplicationFrame(QFrame):
                         Qt.TransformationMode.SmoothTransformation
                     )
                     label.setPixmap(scaled_pixmap)
-

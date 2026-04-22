@@ -3,9 +3,11 @@ class SegmentActionController:
         self.bezier_manager = bezier_manager
         self.segment_service = segment_service
 
-    def add_new_segment(self, layer_name="Contour"):
+    def add_new_segment(self, layer_name=None):
         """Add a new segment"""
         print("New segment started.")
+        if layer_name is None and hasattr(self.bezier_manager, "layer_config"):
+            layer_name = self.bezier_manager.layer_config.default_segment_layer_name()
         new_segment, success = self.bezier_manager.start_new_segment(layer_name)
 
         if success:

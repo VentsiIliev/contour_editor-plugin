@@ -38,6 +38,8 @@ from .persistence.providers import (
 )
 from .persistence.data.segment_provider import SegmentManagerProvider
 from .persistence.data.settings_provider_registry import SettingsProviderRegistry
+from .persistence.data.layer_config_registry import LayerConfigRegistry
+from .persistence.config.layer_config import ContourEditorLayerConfig, LayerRoleConfig
 
 # Settings configuration
 from .models.settings_config import SettingsConfig, SettingsGroup
@@ -104,6 +106,9 @@ __all__ = [
     'AdditionalFormBehaviorProvider',
     'SegmentManagerProvider',
     'SettingsProviderRegistry',
+    'LayerConfigRegistry',
+    'ContourEditorLayerConfig',
+    'LayerRoleConfig',
 
     # Settings
     'SettingsConfig',
