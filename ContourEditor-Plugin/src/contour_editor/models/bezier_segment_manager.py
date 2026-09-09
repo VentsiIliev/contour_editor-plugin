@@ -333,7 +333,7 @@ class BezierSegmentManager:
                 dy = pt.y() - pos.y()
                 distance = math.hypot(dx, dy)
                 if distance <= threshold:
-                    targets.append(("anchor", seg_idx, idx))
+                    targets.append((distance, "anchor", seg_idx, idx))
             for idx, ctrl in enumerate(segment.controls):
                 if ctrl is None:
                     continue
@@ -341,8 +341,9 @@ class BezierSegmentManager:
                 dy = ctrl.y() - pos.y()
                 distance = math.hypot(dx, dy)
                 if distance <= threshold:
-                    targets.append(("control", seg_idx, idx))
-        return targets
+                    targets.append((distance, "control", seg_idx, idx))
+        targets.sort(key=lambda target: target[0])
+        return [target[1:] for target in targets]
 
     def find_drag_target(self, pos, threshold=10):
         for seg_index, seg in enumerate(self.segments):

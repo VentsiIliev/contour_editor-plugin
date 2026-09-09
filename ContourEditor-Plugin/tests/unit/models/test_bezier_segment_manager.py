@@ -601,3 +601,24 @@ class TestBackendIntegration:
 
         assert manager.segments[0].layer == manager.fill_layer
 
+
+def test_find_all_drag_targets_returns_nearest_point_first():
+    from types import SimpleNamespace
+
+    from PyQt6.QtCore import QPointF
+
+    from contour_editor.models.bezier_segment_manager import BezierSegmentManager
+
+    manager = BezierSegmentManager.__new__(BezierSegmentManager)
+    manager.segments = [
+        SimpleNamespace(points=[QPointF(108, 100)], controls=[None]),
+        SimpleNamespace(points=[QPointF(103, 100)], controls=[QPointF(105, 100)]),
+    ]
+
+    targets = manager.find_all_drag_targets(QPointF(100, 100), threshold=10)
+
+    assert targets == [
+        ("anchor", 1, 0),
+        ("control", 1, 0),
+        ("anchor", 0, 0),
+    ]

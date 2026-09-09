@@ -124,6 +124,7 @@ PIXELS_PER_MM = 0.985  # Calibration factor for mm conversion
 # ============================================================================
 DRAG_THRESHOLD_PX = 10  # Minimum movement to trigger drag
 POINT_HIT_RADIUS_PX = 10  # Screen-space hit radius for point selection
+POINT_DRAG_ACQUISITION_RADIUS_PX = 24  # Wider fallback used only after drag intent
 CLUSTER_DISTANCE_PX = 6  # Merge nearby points in screen-space
 
 # ============================================================================

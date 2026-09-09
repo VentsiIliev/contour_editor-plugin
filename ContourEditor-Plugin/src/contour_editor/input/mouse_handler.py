@@ -1,7 +1,15 @@
 from PyQt6.QtCore import Qt, QPointF
+
+from ..persistence.config import constants
+
+
 class MouseHandler:
     def __init__(self, context):
         self.ctx = context
+        self._pending_drag_target = None
+        self._pending_add_pos = None
+        self._pending_press_screen_pos = None
+
     def handle_press(self, event):
         editor = self.ctx.widget
         if self.ctx.overlay.is_point_info_visible():
@@ -22,7 +30,8 @@ class MouseHandler:
             print(f"Position out of image: {event.position()}")
             return
         pos = self.ctx.viewport.screen_to_image(event.position())
-        min_px_hit = 10
+        self._clear_pending_action()
+        min_px_hit = constants.POINT_HIT_RADIUS_PX
         hit_radius_img = min_px_hit / self.ctx.viewport.scale
         print("Mouse pressed at image coords:", pos)
         if self.ctx.mode.is_ruler_active:
@@ -57,21 +66,32 @@ class MouseHandler:
                 if self.ctx.mode.is_multi_select_active:
                     print("Multi-select mode: clicked empty space, no point added")
                     return
-                result = editor._handle_add_control_point(pos)
-                if result:
-                    print(f"Added control point at {pos}")
+                acquisition_radius_img = (
+                    constants.POINT_DRAG_ACQUISITION_RADIUS_PX
+                    / self.ctx.viewport.scale
+                )
+                nearby_candidates = self.ctx.segments.find_drag_targets(
+                    pos,
+                    acquisition_radius_img,
+                )
+                if nearby_candidates:
+                    self._pending_drag_target = nearby_candidates[0]
+                    self._pending_add_pos = QPointF(pos)
+                    self._pending_press_screen_pos = QPointF(event.position())
                     return
-            self.ctx.selection.clear()
-            result = editor._handle_add_control_point(pos)
-            if result:
-                print(f"_handle_add_control_point return result: {result}")
-                return
-            editor.manager.add_point(pos)
-            self.ctx.update()
-            editor.pointsUpdated.emit()
+            self._add_point(editor, pos)
+
     def handle_move(self, event):
         editor = self.ctx.widget
         editor.current_cursor_pos = event.position()
+        if self._pending_drag_target is not None:
+            delta = event.position() - self._pending_press_screen_pos
+            if delta.manhattanLength() >= constants.DRAG_THRESHOLD_PX:
+                drag_target = self._pending_drag_target
+                self._clear_pending_action()
+                self.ctx.mode.drag.mousePress(editor, event, drag_target)
+                self.ctx.mode.drag.mouseMove(editor, event)
+            return
         if editor.point_info_timer.isActive() and editor.press_hold_start_pos is not None:
             dx = event.position().x() - editor.press_hold_start_pos.x()
             dy = event.position().y() - editor.press_hold_start_pos.y()
@@ -115,6 +135,11 @@ class MouseHandler:
             editor.pointsUpdated.emit()
     def handle_release(self, event):
         editor = self.ctx.widget
+        if self._pending_drag_target is not None:
+            add_pos = self._pending_add_pos
+            self._clear_pending_action()
+            self._add_point(editor, add_pos)
+            return
         if editor.point_info_timer.isActive():
             editor.point_info_timer.stop()
         editor.press_hold_start_pos = None
@@ -132,3 +157,18 @@ class MouseHandler:
             editor.setCursor(Qt.CursorShape.OpenHandCursor)
             self.ctx.mode.pan.mouseRelease()
         self.ctx.update()
+
+    def _add_point(self, editor, pos):
+        self.ctx.selection.clear()
+        result = editor._handle_add_control_point(pos)
+        if result:
+            print(f"Added control point at {pos}")
+            return
+        editor.manager.add_point(pos)
+        self.ctx.update()
+        editor.pointsUpdated.emit()
+
+    def _clear_pending_action(self):
+        self._pending_drag_target = None
+        self._pending_add_pos = None
+        self._pending_press_screen_pos = None
