@@ -138,8 +138,9 @@ class ListBuilder:
             self._add_point_item(f"P{i}", coords, seg_index, i, 'anchor')
 
         for i, ctrl in enumerate(segment.controls):
-            coords = f"({ctrl.x():.1f}, {ctrl.y():.1f})" if isinstance(ctrl, QPointF) else "Invalid"
-            self._add_point_item(f"C{i}", coords, seg_index, i, 'control')
+            if isinstance(ctrl, QPointF):
+                coords = f"({ctrl.x():.1f}, {ctrl.y():.1f})"
+                self._add_point_item(f"C{i}", coords, seg_index, i, 'control')
 
     def _add_point_item(self, label, coordinates, seg_index, point_index, point_type):
         """Add a point item to the list"""
