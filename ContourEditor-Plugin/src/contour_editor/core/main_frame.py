@@ -34,6 +34,7 @@ from contour_editor.persistence.providers import (
     AdditionalFormProvider,
     AdditionalFormBehaviorProvider,
 )
+from contour_editor.persistence.config.ui_config import ContourEditorUiConfig
 
 
 class MainApplicationFrame(QFrame):
@@ -45,9 +46,10 @@ class MainApplicationFrame(QFrame):
     capture_data_received = pyqtSignal(dict, bool)  # Signal when capture data is received (data, close_contour)
     additional_form_created = pyqtSignal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, ui_config=None):
         super().__init__(parent)
         self.parent = parent
+        self.ui_config = ui_config or ContourEditorUiConfig()
         # State management
         self.current_view = "point_manager"  # "point_manager" or "additional_form"
         self.initUI()
@@ -57,7 +59,12 @@ class MainApplicationFrame(QFrame):
         mainLayout.setContentsMargins(0, 0, 0, 0)
         mainLayout.setSpacing(0)
 
-        self.contourEditor = ContourEditorWithBottomToolBar(None, image_path="imageDebug.png", data=None)
+        self.contourEditor = ContourEditorWithBottomToolBar(
+            None,
+            image_path="imageDebug.png",
+            data=None,
+            ui_config=self.ui_config,
+        )
         self.contourEditor.update_camera_feed_requested.connect(self.update_camera_feed_requested.emit)
 
         # Initialize ContourProcessingService with the actual editor's manager
@@ -67,7 +74,7 @@ class MainApplicationFrame(QFrame):
 
         # Top bar widget
         # self.topbar = TopBarWidget(self.contourEditor, None)
-        self.topbar = TopBarWidget()
+        self.topbar = TopBarWidget(self.ui_config)
         self.topbar.save_requested.connect(self.on_first_save_clicked)
         self.topbar.capture_requested.connect(self.capture_requested.emit)
         self.topbar.start_requested.connect(self.onStart)

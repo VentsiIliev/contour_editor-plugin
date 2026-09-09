@@ -9,6 +9,7 @@ from .styles import (
     PRIMARY, BORDER, ICON_COLOR, TOPBAR_BG, GROUP_BG,
     BUTTON_SIZE, ICON_SIZE, NORMAL_STYLE, PRIMARY_STYLE, ACTIVE_STYLE
 )
+from ...persistence.config.ui_config import ContourEditorUiConfig, EditorButton
 
 
 class TopBarWidget(QWidget):
@@ -25,8 +26,9 @@ class TopBarWidget(QWidget):
     tools_requested = pyqtSignal()
     generate_pattern_requested = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, ui_config=None):
         super().__init__()
+        ui_config = ui_config or ContourEditorUiConfig()
 
         self.setMinimumHeight(88)
         self.setStyleSheet(f"""
@@ -124,6 +126,22 @@ class TopBarWidget(QWidget):
             self.start_button,
             self.save_button
         ]
+
+        configured_buttons = {
+            EditorButton.UNDO: self.undo_button,
+            EditorButton.REDO: self.redo_button,
+            EditorButton.TOOLS: self.tools_button,
+            EditorButton.SETTINGS: self.settings_button,
+            EditorButton.CAPTURE: self.capture_button,
+            EditorButton.REMOVE: self.remove_button,
+            EditorButton.PICKUP: self.pickup_button,
+            EditorButton.PREVIEW: self.preview_button,
+            EditorButton.GENERATE_PATTERN: self.generate_button,
+            EditorButton.START: self.start_button,
+            EditorButton.SAVE: self.save_button,
+        }
+        for button_name, button in configured_buttons.items():
+            button.setVisible(ui_config.is_visible(button_name))
 
     # ==================================================
 

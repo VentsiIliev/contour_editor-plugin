@@ -11,6 +11,7 @@ from .persistence.providers.form_provider import AdditionalFormProvider
 from .persistence.providers.widget_provider import WidgetProvider
 from .models.settings_config import SettingsConfig
 from .persistence.config.layer_config import ContourEditorLayerConfig
+from .persistence.config.ui_config import ContourEditorUiConfig
 from .ui.new_widgets.SegmentSettingsWidget import configure_segment_settings
 
 
@@ -32,6 +33,7 @@ class ContourEditorBuilder:
         self._settings_config: Optional[SettingsConfig] = None
         self._settings_provider = None
         self._layer_config: Optional[ContourEditorLayerConfig] = None
+        self._ui_config: Optional[ContourEditorUiConfig] = None
         self._form_factory = None
         self._widget_factory = None
         self._save_callback: Optional[Callable] = None
@@ -59,6 +61,11 @@ class ContourEditorBuilder:
     def with_layer_config(self, config: ContourEditorLayerConfig):
         """Configure semantic layer names and visibility (optional)"""
         self._layer_config = config
+        return self
+
+    def with_ui_config(self, config: ContourEditorUiConfig):
+        """Configure which editor toolbar buttons are visible (optional)."""
+        self._ui_config = config
         return self
 
     def with_form(self, form_factory):
@@ -116,7 +123,7 @@ class ContourEditorBuilder:
             self._configure_widgets()
         if self._form_factory:
             self._configure_form()
-        self._editor = MainApplicationFrame(parent=self._parent)
+        self._editor = MainApplicationFrame(parent=self._parent, ui_config=self._ui_config)
         self._connect_signals()
         print("✅ Contour Editor built successfully")
         return self._editor

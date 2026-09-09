@@ -7,6 +7,7 @@ from .styles import (
     PRIMARY, ICON_COLOR,
     BUTTON_SIZE, ICON_SIZE, NORMAL_STYLE, ACTIVE_STYLE
 )
+from ...persistence.config.ui_config import ContourEditorUiConfig, EditorButton
 
 
 class BottomToolBar(QWidget):
@@ -18,8 +19,9 @@ class BottomToolBar(QWidget):
     hide_points_requested = pyqtSignal()
     show_points_requested = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, ui_config=None):
         super().__init__(parent)
+        self._ui_config = ui_config or ContourEditorUiConfig()
 
         self.is_drag_mode = False
         self.points_visible = True
@@ -69,6 +71,16 @@ class BottomToolBar(QWidget):
             self.pan_toggle_button
         ]:
             layout.addWidget(btn)
+
+        configured_buttons = {
+            EditorButton.POINT_VISIBILITY: self.hide_points_button,
+            EditorButton.ZOOM_OUT: self.zoom_out_button,
+            EditorButton.RESET_ZOOM: self.reset_zoom_button,
+            EditorButton.ZOOM_IN: self.zoom_in_button,
+            EditorButton.PAN: self.pan_toggle_button,
+        }
+        for button_name, button in configured_buttons.items():
+            button.setVisible(self._ui_config.is_visible(button_name))
 
         self.setLayout(layout)
 
