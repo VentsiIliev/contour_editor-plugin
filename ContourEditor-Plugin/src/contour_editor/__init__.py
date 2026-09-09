@@ -40,7 +40,12 @@ from .persistence.data.segment_provider import SegmentManagerProvider
 from .persistence.data.settings_provider_registry import SettingsProviderRegistry
 from .persistence.data.layer_config_registry import LayerConfigRegistry
 from .persistence.config.layer_config import ContourEditorLayerConfig, LayerRoleConfig
-from .persistence.config.ui_config import ContourEditorUiConfig, EditorButton
+from .persistence.config.ui_config import (
+    ContourEditorUiConfig,
+    CustomEditorButtonSpec,
+    EditorButton,
+    ToolbarPlacement,
+)
 
 # Settings configuration
 from .models.settings_config import SettingsConfig, SettingsGroup
@@ -111,7 +116,9 @@ __all__ = [
     'ContourEditorLayerConfig',
     'LayerRoleConfig',
     'ContourEditorUiConfig',
+    'CustomEditorButtonSpec',
     'EditorButton',
+    'ToolbarPlacement',
 
     # Settings
     'SettingsConfig',

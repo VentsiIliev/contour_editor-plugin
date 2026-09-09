@@ -45,6 +45,7 @@ class MainApplicationFrame(QFrame):
     start_requested = pyqtSignal()  # Signal when start/execute button is pressed
     capture_data_received = pyqtSignal(dict, bool)  # Signal when capture data is received (data, close_contour)
     additional_form_created = pyqtSignal(object)
+    custom_action_requested = pyqtSignal(str)
 
     def __init__(self, parent=None, ui_config=None):
         super().__init__(parent)
@@ -66,6 +67,7 @@ class MainApplicationFrame(QFrame):
             ui_config=self.ui_config,
         )
         self.contourEditor.update_camera_feed_requested.connect(self.update_camera_feed_requested.emit)
+        self.contourEditor.custom_action_requested.connect(self.custom_action_requested.emit)
 
         # Initialize ContourProcessingService with the actual editor's manager
         actual_editor = self.contourEditor.editor_with_rulers.editor
@@ -75,6 +77,7 @@ class MainApplicationFrame(QFrame):
         # Top bar widget
         # self.topbar = TopBarWidget(self.contourEditor, None)
         self.topbar = TopBarWidget(self.ui_config)
+        self.topbar.custom_action_requested.connect(self.custom_action_requested.emit)
         self.topbar.save_requested.connect(self.on_first_save_clicked)
         self.topbar.capture_requested.connect(self.capture_requested.emit)
         self.topbar.start_requested.connect(self.onStart)

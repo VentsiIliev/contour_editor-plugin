@@ -40,6 +40,7 @@ class ContourEditorBuilder:
         self._capture_callback: Optional[Callable] = None
         self._execute_callback: Optional[Callable] = None
         self._update_camera_feed_callback: Optional[Callable] = None
+        self._custom_action_callback: Optional[Callable[[str], None]] = None
         self._editor: Optional[MainApplicationFrame] = None
 
     def with_parent(self, parent):
@@ -108,6 +109,11 @@ class ContourEditorBuilder:
             builder.on_update_camera_feed(handle_camera_update)
         """
         self._update_camera_feed_callback = callback
+        return self
+
+    def on_custom_action(self, callback: Callable[[str], None]):
+        """Set callback receiving the action ID of a configured custom button."""
+        self._custom_action_callback = callback
         return self
 
     def build(self) -> MainApplicationFrame:
@@ -182,3 +188,6 @@ class ContourEditorBuilder:
         if self._update_camera_feed_callback:
             self._editor.update_camera_feed_requested.connect(self._update_camera_feed_callback)
             print("✅ Camera feed update callback connected")
+        if self._custom_action_callback:
+            self._editor.custom_action_requested.connect(self._custom_action_callback)
+            print("✅ Custom action callback connected")

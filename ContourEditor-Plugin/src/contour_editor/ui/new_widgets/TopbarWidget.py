@@ -9,7 +9,11 @@ from .styles import (
     PRIMARY, BORDER, ICON_COLOR, TOPBAR_BG, GROUP_BG,
     BUTTON_SIZE, ICON_SIZE, NORMAL_STYLE, PRIMARY_STYLE, ACTIVE_STYLE
 )
-from ...persistence.config.ui_config import ContourEditorUiConfig, EditorButton
+from ...persistence.config.ui_config import (
+    ContourEditorUiConfig,
+    EditorButton,
+    ToolbarPlacement,
+)
 
 
 class TopBarWidget(QWidget):
@@ -25,6 +29,7 @@ class TopBarWidget(QWidget):
     settings_requested = pyqtSignal()
     tools_requested = pyqtSignal()
     generate_pattern_requested = pyqtSignal()
+    custom_action_requested = pyqtSignal(str)
 
     def __init__(self, ui_config=None):
         super().__init__()
@@ -142,6 +147,28 @@ class TopBarWidget(QWidget):
         }
         for button_name, button in configured_buttons.items():
             button.setVisible(ui_config.is_visible(button_name))
+
+        custom_groups = {
+            ToolbarPlacement.TOP_LEFT: left_group,
+            ToolbarPlacement.TOP_CENTER: center_group,
+            ToolbarPlacement.TOP_RIGHT: right_group,
+        }
+        self.custom_buttons = {}
+        for spec in ui_config.custom_buttons:
+            if spec.placement not in custom_groups:
+                continue
+            button = self.create_icon_button(spec.icon_name, primary=spec.primary)
+            button.setProperty("custom_action_id", spec.action_id)
+            button.setToolTip(spec.tooltip)
+            button.clicked.connect(self._on_custom_button_clicked)
+            custom_groups[spec.placement].layout().addWidget(button)
+            self.custom_buttons[spec.action_id] = button
+            self.buttons.append(button)
+
+    def _on_custom_button_clicked(self):
+        button = self.sender()
+        if button is not None:
+            self.custom_action_requested.emit(button.property("custom_action_id"))
 
     # ==================================================
 

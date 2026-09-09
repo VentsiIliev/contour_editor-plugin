@@ -11,6 +11,7 @@ from ..persistence.config.ui_config import ContourEditorUiConfig
 class ContourEditorWithBottomToolBar(QWidget):
     """Decorator that wraps ContourEditorWithRulers and adds zoom controls at bottom center"""
     update_camera_feed_requested = pyqtSignal()
+    custom_action_requested = pyqtSignal(str)
     def __init__(self, visionSystem, image_path=None, contours=None, data=None, ui_config=None):
         super().__init__()
 
@@ -24,6 +25,7 @@ class ContourEditorWithBottomToolBar(QWidget):
             self,
             ui_config=ui_config or ContourEditorUiConfig(),
         )
+        self.bottom_toolbar.custom_action_requested.connect(self.custom_action_requested.emit)
 
         # Connect zoom controls to viewport controller methods
         self.bottom_toolbar.zoom_in_requested.connect(self.editor_with_rulers.editor.viewport_controller.zoom_in)

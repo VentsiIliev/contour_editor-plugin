@@ -5,9 +5,13 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QSizePolicy, QApp
 
 from .styles import (
     PRIMARY, ICON_COLOR,
-    BUTTON_SIZE, ICON_SIZE, NORMAL_STYLE, ACTIVE_STYLE
+    BUTTON_SIZE, ICON_SIZE, NORMAL_STYLE, PRIMARY_STYLE, ACTIVE_STYLE
 )
-from ...persistence.config.ui_config import ContourEditorUiConfig, EditorButton
+from ...persistence.config.ui_config import (
+    ContourEditorUiConfig,
+    EditorButton,
+    ToolbarPlacement,
+)
 
 
 class BottomToolBar(QWidget):
@@ -18,6 +22,7 @@ class BottomToolBar(QWidget):
     pan_mode_toggle_requested = pyqtSignal()
     hide_points_requested = pyqtSignal()
     show_points_requested = pyqtSignal()
+    custom_action_requested = pyqtSignal(str)
 
     def __init__(self, parent=None, ui_config=None):
         super().__init__(parent)
@@ -82,20 +87,40 @@ class BottomToolBar(QWidget):
         for button_name, button in configured_buttons.items():
             button.setVisible(self._ui_config.is_visible(button_name))
 
+        self.custom_buttons = {}
+        for spec in self._ui_config.custom_buttons:
+            if spec.placement != ToolbarPlacement.BOTTOM:
+                continue
+            button = self.create_button(
+                spec.icon_name,
+                self._on_custom_button_clicked,
+                primary=spec.primary,
+            )
+            button.setProperty("custom_action_id", spec.action_id)
+            button.setToolTip(spec.tooltip)
+            layout.addWidget(button)
+            self.custom_buttons[spec.action_id] = button
+
         self.setLayout(layout)
+
+    def _on_custom_button_clicked(self):
+        button = self.sender()
+        if button is not None:
+            self.custom_action_requested.emit(button.property("custom_action_id"))
 
     # ==================================================
 
-    def create_button(self, icon_name, handler):
+    def create_button(self, icon_name, handler, primary=False):
         btn = QPushButton()
         btn.icon_name = icon_name
 
-        btn.setIcon(qta.icon(icon_name, color=ICON_COLOR))
+        icon_color = "white" if primary else ICON_COLOR
+        btn.setIcon(qta.icon(icon_name, color=icon_color))
         btn.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
         btn.setFixedSize(BUTTON_SIZE, BUTTON_SIZE)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
         btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        btn.setStyleSheet(NORMAL_STYLE)
+        btn.setStyleSheet(PRIMARY_STYLE if primary else NORMAL_STYLE)
 
         btn.clicked.connect(handler)
 
