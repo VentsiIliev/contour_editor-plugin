@@ -1,5 +1,5 @@
 # pl_ui/contour_editor/EditorStateMachine/Modes/RectangleSelectMode.py
-from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtCore import Qt, QPointF, QRectF
 from .base_mode import BaseMode
 from ....persistence.utils.coordinate_utils import map_to_image_space
 
@@ -33,6 +33,23 @@ class RectangleSelectMode(BaseMode):
             pos_img = map_to_image_space(event.position(), editor.translation, editor.scale_factor)
 
             self.selection_end = pos_img
+
+            # Match point dragging: pan the image when the cursor approaches
+            # an editor edge so the selection can continue beyond the viewport.
+            margin = 50
+            scroll_speed = 10
+            x, y = event.position().x(), event.position().y()
+
+            if x < margin:
+                editor.translation += QPointF(scroll_speed, 0)
+            elif x > editor.width() - margin:
+                editor.translation -= QPointF(scroll_speed, 0)
+
+            if y < margin:
+                editor.translation += QPointF(0, scroll_speed)
+            elif y > editor.height() - margin:
+                editor.translation -= QPointF(0, scroll_speed)
+
             editor.update()  # Redraw to show selection rectangle
 
     def mouseRelease(self, editor, event):
